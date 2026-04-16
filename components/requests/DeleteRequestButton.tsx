@@ -47,10 +47,8 @@ export default function DeleteRequestButton({ requestId, isAdmin = false }: Dele
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm">
-          {isAdmin ? 'Talebi Sil' : 'İptal Edilen Talebi Sil'}
-        </Button>
+      <AlertDialogTrigger render={<Button variant="destructive" size="sm" />}>
+        {isAdmin ? 'Talebi Sil' : 'İptal Edilen Talebi Sil'}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

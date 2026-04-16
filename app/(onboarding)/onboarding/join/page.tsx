@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Building2 } from 'lucide-react'
@@ -10,7 +10,7 @@ const ROLE_LABELS: Record<string, string> = {
   client: 'Proje Yöneticisi',
 }
 
-export default function JoinPage() {
+function JoinPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
@@ -183,5 +183,17 @@ export default function JoinPage() {
         </button>
       </div>
     </div>
+  )
+}
+
+export default function JoinPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen w-full items-center justify-center bg-white">
+        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <JoinPageContent />
+    </Suspense>
   )
 }

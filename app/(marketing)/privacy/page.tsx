@@ -308,8 +308,8 @@ export default function PrivacyPage() {
                 </div>
               )}
 
-              {'note' in section && !('cookies' in section) && section.note && (
-                <p className="text-sm text-gray-500 mt-3 pl-4 border-l-2 border-primary/30 italic">{section.note}</p>
+              {'note' in section && !('cookies' in section) && (section as unknown as { note: string }).note && (
+                <p className="text-sm text-gray-500 mt-3 pl-4 border-l-2 border-primary/30 italic">{(section as unknown as { note: string }).note}</p>
               )}
 
               {'subsections' in section && section.subsections && (

@@ -340,12 +340,12 @@ export default function TermsPage() {
                 </dl>
               )}
 
-              {'roles' in section && section.roles && (
+              {'roles' in section && !!(section as unknown as { roles: unknown[] }).roles && (
                 <div className="space-y-3">
                   {'intro' in section && section.intro && (
                     <p className="text-sm text-gray-600 leading-relaxed mb-3">{section.intro}</p>
                   )}
-                  {section.roles.map((role, i) => (
+                  {(section as unknown as { roles: { name: string; desc: string }[] }).roles.map((role, i) => (
                     <div key={i} className="flex gap-3 p-3.5 rounded-lg bg-gray-50 border border-gray-100">
                       <div className="flex-shrink-0 w-2 h-2 mt-1.5 rounded-full bg-primary" />
                       <div>
