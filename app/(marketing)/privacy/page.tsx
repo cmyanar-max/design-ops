@@ -308,8 +308,10 @@ export default function PrivacyPage() {
                 </div>
               )}
 
-              {'note' in section && !('cookies' in section) && (section as unknown as { note: string }).note && (
-                <p className="text-sm text-gray-500 mt-3 pl-4 border-l-2 border-primary/30 italic">{(section as unknown as { note: string }).note}</p>
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              {'note' in section && !('cookies' in section) && !!(section as any).note && (
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                <p className="text-sm text-gray-500 mt-3 pl-4 border-l-2 border-primary/30 italic">{(section as any).note}</p>
               )}
 
               {'subsections' in section && section.subsections && (
