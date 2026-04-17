@@ -252,7 +252,6 @@ export default function KanbanBoard({ initialRequests, orgId, readOnly = false }
                 status={status}
                 label={colInfo.label}
                 variant={colInfo.variant}
-                appearance={colInfo.appearance}
                 requests={getColumnRequests(status)}
                 canDrop={!readOnly}
                 readOnly={readOnly}

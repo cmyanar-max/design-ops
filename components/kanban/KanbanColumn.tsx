@@ -5,20 +5,18 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { cn } from '@/lib/utils'
 import KanbanCard from './KanbanCard'
 import { RequestWithUser, RequestStatus } from '@/types/database'
-import { Badge } from '@/components/ui/base-badge'
-import type { BadgeProps } from '@/components/ui/base-badge'
+import { Badge, type BadgeVariant } from '@/components/ui/badge-1'
 
 interface KanbanColumnProps {
   status: RequestStatus
   label: string
-  variant: BadgeProps['variant']
-  appearance: BadgeProps['appearance']
+  variant: BadgeVariant
   requests: RequestWithUser[]
   canDrop?: boolean
   readOnly?: boolean
 }
 
-export default function KanbanColumn({ status, label, variant, appearance, requests, canDrop = true, readOnly = false }: KanbanColumnProps) {
+export default function KanbanColumn({ status, label, variant, requests, canDrop = true, readOnly = false }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: status, disabled: !canDrop })
 
   return (
@@ -32,7 +30,7 @@ export default function KanbanColumn({ status, label, variant, appearance, reque
       {/* Kolon başlığı */}
       <div className="flex items-center justify-between px-3 h-12 border-b border-border">
         <div className="flex items-center gap-2">
-          <Badge variant={variant} appearance={appearance} size="sm" shape="circle">{label}</Badge>
+          <Badge variant={variant} size="sm">{label}</Badge>
         </div>
         <span className="text-xs font-medium text-muted-foreground bg-background px-1.5 rounded h-6 leading-6 flex items-center justify-center">
           {requests.length}

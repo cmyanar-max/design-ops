@@ -3,7 +3,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getInitials } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/base-badge'
+import { Badge } from '@/components/ui/badge-1'
 import InviteTeamMember from '@/components/team/InviteTeamMember'
 import ApproveUserButton from '@/components/team/ApproveUserButton'
 import RejectUserButton from '@/components/team/RejectUserButton'
@@ -29,10 +29,10 @@ interface Invitation {
 }
 
 const ROLE_LABELS: Record<string, string> = { admin: 'Yönetici', designer: 'Tasarımcı', client: 'Proje Yönetici' }
-const ROLE_VARIANT: Record<string, { variant: 'info' | 'primary' | 'success', appearance: 'light' }> = {
-  admin: { variant: 'info', appearance: 'light' },
-  designer: { variant: 'primary', appearance: 'light' },
-  client: { variant: 'success', appearance: 'light' },
+const ROLE_VARIANT: Record<string, { variant: 'purple-subtle' | 'blue-subtle' | 'green-subtle' }> = {
+  admin: { variant: 'purple-subtle' },
+  designer: { variant: 'blue-subtle' },
+  client: { variant: 'green-subtle' },
 }
 
 export default async function TeamPage() {
@@ -148,7 +148,7 @@ export default async function TeamPage() {
                     </p>
                     <p className="text-xs text-muted-foreground truncate">{member.email}</p>
                   </div>
-                  <Badge {...(ROLE_VARIANT[member.role] ?? { variant: 'secondary', appearance: 'light' })} size="sm">
+                  <Badge {...(ROLE_VARIANT[member.role] ?? { variant: 'gray-subtle' })} size="sm">
                     {ROLE_LABELS[member.role] ?? member.role}
                   </Badge>
                 </div>
@@ -221,7 +221,7 @@ export default async function TeamPage() {
                     <p className="text-sm font-medium truncate">{member.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{member.email}</p>
                   </div>
-                  <Badge {...(ROLE_VARIANT[member.role] ?? { variant: 'secondary', appearance: 'light' })} size="sm">
+                  <Badge {...(ROLE_VARIANT[member.role] ?? { variant: 'gray-subtle' })} size="sm">
                     {ROLE_LABELS[member.role] ?? member.role}
                   </Badge>
                   <div className="flex gap-2">
@@ -286,10 +286,10 @@ export default async function TeamPage() {
                       Son geçerlilik: {new Date(invite.expires_at).toLocaleDateString('tr-TR')}
                     </p>
                   </div>
-                  <Badge {...(ROLE_VARIANT[invite.role] ?? { variant: 'secondary', appearance: 'light' })} size="sm">
+                  <Badge {...(ROLE_VARIANT[invite.role] ?? { variant: 'gray-subtle' })} size="sm">
                     {ROLE_LABELS[invite.role] ?? invite.role}
                   </Badge>
-                  <Badge variant="warning" appearance="light" size="sm">Bekleniyor</Badge>
+                  <Badge variant="amber-subtle" size="sm">Bekleniyor</Badge>
                 </div>
               ))}
             </div>

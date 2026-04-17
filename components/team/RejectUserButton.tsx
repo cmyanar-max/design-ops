@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { NeonButton } from '@/components/ui/neon-button'
+import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 
 export default function RejectUserButton({ userId, userName }: { userId: string; userName: string }) {
@@ -27,13 +27,13 @@ export default function RejectUserButton({ userId, userName }: { userId: string;
   }
 
   return (
-    <NeonButton
+    <Button
       size="sm"
       onClick={handleReject}
       disabled={loading}
-      variant="destructive-solid"
+      variant="destructive"
     >
       {loading ? 'Reddediliyor...' : 'Reddet'}
-    </NeonButton>
+    </Button>
   )
 }

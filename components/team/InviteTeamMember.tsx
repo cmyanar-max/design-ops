@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { NeonButton } from '@/components/ui/neon-button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -52,9 +51,9 @@ export default function InviteTeamMember() {
 
   return (
     <>
-      <NeonButton onClick={() => setOpen(true)} size="sm">
+      <Button onClick={() => setOpen(true)} size="sm">
         + Üye Davet Et
-      </NeonButton>
+      </Button>
 
       <Dialog open={open} onOpenChange={v => { if (!v) handleClose() }}>
         <DialogContent className="sm:max-w-md">

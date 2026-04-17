@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/base-badge'
+import { Badge } from '@/components/ui/badge-1'
 import { Skeleton } from '@/components/ui/skeleton'
 import FileUploadZone from './FileUploadZone'
 import { File as FileRecord } from '@/types/database'
@@ -56,9 +56,14 @@ export default function FileList({ requestId, organizationId, canUpload }: FileL
 
   const handleDownload = async (file: FileRecord) => {
     const url = await getSignedUrl(file.storage_path)
-    if (url) {
-      window.open(url, '_blank')
-    }
+    if (!url) return
+    const blob = await fetch(url).then(r => r.blob())
+    const blobUrl = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = blobUrl
+    a.download = file.filename
+    a.click()
+    URL.revokeObjectURL(blobUrl)
   }
 
   useEffect(() => {
@@ -96,13 +101,13 @@ export default function FileList({ requestId, organizationId, canUpload }: FileL
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-xs text-muted-foreground">{formatFileSize(file.file_size)}</span>
                   {file.is_final && (
-                    <Badge variant="success" appearance="light" size="sm">Final</Badge>
+                    <Badge variant="green-subtle" size="sm">Final</Badge>
                   )}
                   {file.ai_generated && (
-                    <Badge variant="info" appearance="light" size="sm">🤖 AI</Badge>
+                    <Badge variant="purple-subtle" size="sm">🤖 AI</Badge>
                   )}
                   {file.version > 1 && (
-                    <Badge variant="outline" size="sm">v{file.version}</Badge>
+                    <Badge variant="pill" size="sm">v{file.version}</Badge>
                   )}
                 </div>
               </div>

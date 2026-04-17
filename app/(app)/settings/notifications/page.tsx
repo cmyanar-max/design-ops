@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { NeonButton } from '@/components/ui/neon-button'
+import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 
 interface NotifPrefs {
@@ -150,9 +150,9 @@ export default function NotificationSettingsPage() {
       </Card>
 
       <div className="flex justify-end">
-        <NeonButton onClick={handleSave} disabled={loading} variant="solid" size="default">
+        <Button onClick={handleSave} disabled={loading}>
           {loading ? 'Kaydediliyor...' : 'Tercihleri Kaydet'}
-        </NeonButton>
+        </Button>
       </div>
     </div>
   )

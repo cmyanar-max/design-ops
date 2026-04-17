@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/base-badge'
+import { Badge } from '@/components/ui/badge-1'
 import { toast } from 'sonner'
 
 interface EditRequestSheetProps {
@@ -206,10 +206,9 @@ export default function EditRequestSheet({ requestId, defaultValues }: EditReque
                 {tags.map(tag => (
                   <Badge
                     key={tag}
-                    variant="secondary"
-                    appearance="light"
+                    variant="gray-subtle"
                     size="sm"
-                    className="cursor-pointer hover:bg-destructive/10 hover:text-destructive"
+                    className="cursor-pointer hover:opacity-70"
                     onClick={() => removeTag(tag)}
                   >
                     {tag} ×

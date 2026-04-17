@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { castRow, castRows } from '@/lib/utils'
 import { Request } from '@/types/database'
 import { PRIORITIES, REQUEST_TYPES, STATUSES, RequestFormValues } from '@/lib/validations/request'
-import { Badge } from '@/components/ui/base-badge'
+import { Badge } from '@/components/ui/badge-1'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import CancelRequestButton from '@/components/requests/CancelRequestButton'
 import DeleteRequestButton from '@/components/requests/DeleteRequestButton'
@@ -55,7 +55,7 @@ export default async function RequestDetailPage({ params }: { params: Params }) 
   const isDesignerOrAdmin = currentUser?.role === 'admin' || currentUser?.role === 'designer'
   const isClient = currentUser?.role === 'client'
   const isAdmin = currentUser?.role === 'admin'
-  const isCancellable = isClient && !['cancelled', 'completed', 'archived'].includes(request.status)
+  const isCancellable = isClient && request.creator.id === authUser.id && !['cancelled', 'completed', 'archived'].includes(request.status)
   const isDeletable = isAdmin || (request.status === 'cancelled' && isClient && request.creator.id === authUser.id)
   const isEditable = request.creator.id === authUser.id &&
     ['new', 'brief_review'].includes(request.status)
@@ -63,9 +63,9 @@ export default async function RequestDetailPage({ params }: { params: Params }) 
   const assignee = request.assignee
 
   return (
-    <div className="flex h-full">
+    <div className="flex flex-col md:flex-row md:h-full">
       {/* Ana içerik */}
-      <div className="flex-1 min-w-0 overflow-y-auto">
+      <div className="flex-1 min-w-0 md:overflow-y-auto">
         <div className="max-w-3xl mx-auto p-6 space-y-6">
           {/* Başlık */}
           <div className="space-y-3">
@@ -73,10 +73,10 @@ export default async function RequestDetailPage({ params }: { params: Params }) 
               <h1 className="text-2xl font-bold">{request.title}</h1>
               <div className="flex items-center gap-2 shrink-0">
                 {priority && (
-                  <Badge variant={priority.variant} appearance={priority.appearance}>{priority.label}</Badge>
+                  <Badge variant={priority.variant}>{priority.label}</Badge>
                 )}
                 {status && (
-                  <Badge variant={status.variant} appearance={status.appearance}>{status.label}</Badge>
+                  <Badge variant={status.variant}>{status.label}</Badge>
                 )}
                 {isEditable && (
                   <EditRequestSheet
@@ -130,7 +130,7 @@ export default async function RequestDetailPage({ params }: { params: Params }) 
             {request.tags.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {request.tags.map(tag => (
-                  <Badge key={tag} variant="secondary" appearance="light">{tag}</Badge>
+                  <Badge key={tag} variant="gray-subtle">{tag}</Badge>
                 ))}
               </div>
             )}
@@ -167,7 +167,7 @@ export default async function RequestDetailPage({ params }: { params: Params }) 
                 <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-1">
                   <p className="text-xs text-muted-foreground">Öncelik</p>
                   {priority ? (
-                    <Badge variant={priority.variant} appearance={priority.appearance} size="sm">{priority.label}</Badge>
+                    <Badge variant={priority.variant} size="sm">{priority.label}</Badge>
                   ) : <p className="text-sm font-medium">—</p>}
                 </div>
                 <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-1">
@@ -280,7 +280,7 @@ export default async function RequestDetailPage({ params }: { params: Params }) 
                   <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Etiketler</p>
                   <div className="flex flex-wrap gap-1.5">
                     {request.tags.map(tag => (
-                      <Badge key={tag} variant="secondary" appearance="light">{tag}</Badge>
+                      <Badge key={tag} variant="gray-subtle">{tag}</Badge>
                     ))}
                   </div>
                 </div>
@@ -344,7 +344,7 @@ export default async function RequestDetailPage({ params }: { params: Params }) 
       </div>
 
       {/* Sağ panel */}
-      <div className="w-72 shrink-0 border-l border-border overflow-y-auto">
+      <div className="w-full md:w-72 shrink-0 border-t md:border-t-0 md:border-l border-border md:overflow-y-auto">
         <div className="p-6 space-y-4">
           {/* AI Brief Panel — herkes görür */}
           <BriefAIPanel
@@ -392,9 +392,9 @@ async function RequestActivityTab({ requestId }: { requestId: string }) {
             <div>
               <span className="font-medium">{user?.name}</span>
               {' '}durumu{' '}
-              <Badge variant="secondary" appearance="light" size="sm">{statusLabels[h.from_status ?? ''] ?? h.from_status}</Badge>
+              <Badge variant="gray-subtle" size="sm">{statusLabels[h.from_status ?? ''] ?? h.from_status}</Badge>
               {' → '}
-              <Badge variant="secondary" appearance="light" size="sm">{statusLabels[h.to_status] ?? h.to_status}</Badge>
+              <Badge variant="gray-subtle" size="sm">{statusLabels[h.to_status] ?? h.to_status}</Badge>
               {' olarak değiştirdi'}
               {h.note && <p className="text-muted-foreground mt-0.5">{h.note}</p>}
               <p className="text-xs text-muted-foreground mt-0.5">

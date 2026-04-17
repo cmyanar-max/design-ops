@@ -23,7 +23,7 @@ import PeriodSelector from '@/components/dashboard/PeriodSelector'
 import { StatsCards } from '@/components/ui/stats-cards'
 import Link from 'next/link'
 import { STATUSES, PRIORITIES, REQUEST_TYPES } from '@/lib/validations/request'
-import { Badge } from '@/components/ui/base-badge'
+import { Badge } from '@/components/ui/badge-1'
 import { getInitials } from '@/lib/utils'
 import { Suspense } from 'react'
 
@@ -216,7 +216,7 @@ export default async function DashboardPage({
                       {/* Öncelik */}
                       <td className="hidden md:table-cell px-4 py-3 text-center">
                         {priority && (
-                          <Badge variant={priority.variant} appearance={priority.appearance} size="sm">
+                          <Badge variant={priority.variant} size="sm">
                             {priority.label}
                           </Badge>
                         )}
@@ -225,7 +225,7 @@ export default async function DashboardPage({
                       {/* Durum */}
                       <td className="hidden lg:table-cell px-4 py-3 text-center">
                         {status && (
-                          <Badge variant={status.variant} appearance={status.appearance} size="sm">
+                          <Badge variant={status.variant} size="sm">
                             {status.label}
                           </Badge>
                         )}

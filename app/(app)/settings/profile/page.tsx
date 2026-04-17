@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { NeonButton } from '@/components/ui/neon-button'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -261,9 +261,9 @@ export default function ProfileSettingsPage() {
           </div>
 
           <div className="flex justify-end pt-2">
-            <NeonButton onClick={handleSave} disabled={loading || !form.name.trim()} variant="solid" size="default">
+            <Button onClick={handleSave} disabled={loading || !form.name.trim()}>
               {loading ? 'Kaydediliyor...' : 'Kaydet'}
-            </NeonButton>
+            </Button>
           </div>
 
           {/* Hesabı Sil Butonu */}
@@ -273,13 +273,13 @@ export default function ProfileSettingsPage() {
                 <p className="text-sm font-medium text-destructive">Hesabı Sil</p>
                 <p className="text-xs text-muted-foreground mt-1">Bu işlem geri alınamaz. Hesabınız ve tüm verileriniz kalıcı olarak silinecektir.</p>
               </div>
-              <NeonButton
-                variant="destructive-solid"
+              <Button
+                variant="destructive"
                 onClick={() => setShowDeleteDialog(true)}
                 disabled={deleting}
               >
                 {deleting ? 'Siliniyor...' : 'Hesabı Kalıcı Olarak Sil'}
-              </NeonButton>
+              </Button>
             </div>
           </div>
         </CardContent>

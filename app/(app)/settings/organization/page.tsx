@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { NeonButton } from '@/components/ui/neon-button'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
@@ -143,14 +143,12 @@ export default function OrganizationSettingsPage() {
           )}
 
           <div className="flex justify-end pt-2">
-            <NeonButton
+            <Button
               onClick={handleSave}
               disabled={loading || limitReached || !isDirty || name.trim().length < 2}
-              variant="solid"
-              size="default"
             >
               {loading ? 'Kaydediliyor...' : 'Kaydet'}
-            </NeonButton>
+            </Button>
           </div>
         </CardContent>
       </Card>

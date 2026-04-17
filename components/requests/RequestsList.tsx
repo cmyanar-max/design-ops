@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getInitials } from '@/lib/utils'
 import { STATUSES, PRIORITIES, REQUEST_TYPES } from '@/lib/validations/request'
-import { Badge } from '@/components/ui/base-badge'
+import { Badge } from '@/components/ui/badge-1'
 import BulkDeleteButton from './BulkDeleteButton'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -257,7 +257,7 @@ export default function RequestsList({ initialRequests, orgId, isAdmin = false }
                     {/* Priority */}
                     <TableCell className="hidden md:table-cell text-center">
                       {priority && (
-                        <Badge variant={priority.variant} appearance={priority.appearance} size="sm">
+                        <Badge variant={priority.variant} size="sm">
                           {priority.label}
                         </Badge>
                       )}
@@ -266,7 +266,7 @@ export default function RequestsList({ initialRequests, orgId, isAdmin = false }
                     {/* Status */}
                     <TableCell className="hidden lg:table-cell text-center">
                       {status && (
-                        <Badge variant={status.variant} appearance={status.appearance} size="sm">
+                        <Badge variant={status.variant} size="sm">
                           {status.label}
                         </Badge>
                       )}

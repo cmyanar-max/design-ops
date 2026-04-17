@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn, getInitials } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/base-badge'
+import { Badge } from '@/components/ui/badge-1'
 import { User } from '@/types/database'
 
 interface AppSidebarProps {
@@ -35,8 +35,7 @@ function NavItem({ href, icon, label, badge }: {
       <span className="flex-1">{label}</span>
       {badge !== undefined && badge > 0 && (
         <Badge
-          variant={isActive ? 'primary' : 'outline'}
-          appearance={isActive ? 'ghost' : 'default'}
+          variant={isActive ? 'blue' : 'pill'}
           size="xs"
           className={cn(
             isActive

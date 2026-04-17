@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { castRows } from '@/lib/utils'
 import Link from 'next/link'
-import { Badge } from '@/components/ui/base-badge'
+import { Badge } from '@/components/ui/badge-1'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 interface ArchivedRequest {
@@ -96,10 +96,9 @@ export default async function ArchivePage({
             href={tab.value ? `/archive?status=${tab.value}` : '/archive'}
           >
             <Badge
-              variant={params.status === tab.value || (!params.status && !tab.value) ? 'primary' : 'outline'}
-              size="lg"
-              shape="circle"
-              className="cursor-pointer px-3"
+              variant={params.status === tab.value || (!params.status && !tab.value) ? 'blue' : 'pill'}
+              size="md"
+              className="cursor-pointer"
             >
               {tab.label}
             </Badge>
@@ -137,13 +136,12 @@ export default async function ArchivePage({
                 </div>
 
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className={`text-xs px-2 py-0.5 rounded font-medium ${
-                    req.status === 'completed' ? 'bg-green-100 text-green-700' :
-                    req.status === 'cancelled' ? 'bg-red-100 text-red-600' :
-                    'bg-gray-100 text-gray-600'
-                  }`}>
+                  <Badge
+                    variant={req.status === 'completed' ? 'green-subtle' : req.status === 'cancelled' ? 'red-subtle' : 'gray-subtle'}
+                    size="sm"
+                  >
                     {req.status === 'completed' ? 'Tamamlandı' : req.status === 'cancelled' ? 'İptal' : 'Arşiv'}
-                  </span>
+                  </Badge>
 
                   {endDate && (
                     <span className="text-xs text-muted-foreground hidden sm:block">

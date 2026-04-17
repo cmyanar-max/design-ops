@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { NeonButton } from '@/components/ui/neon-button'
+import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 
 export default function ApproveUserButton({ userId, userName }: { userId: string; userName: string }) {
@@ -27,8 +27,8 @@ export default function ApproveUserButton({ userId, userName }: { userId: string
   }
 
   return (
-    <NeonButton size="sm" onClick={handleApprove} disabled={loading}>
+    <Button size="sm" onClick={handleApprove} disabled={loading}>
       {loading ? 'Onaylanıyor...' : 'Onayla'}
-    </NeonButton>
+    </Button>
   )
 }

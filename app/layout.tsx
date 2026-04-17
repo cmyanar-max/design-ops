@@ -25,6 +25,9 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'DesignOps',
   description: 'Tasarım süreçlerinizi AI ile hızlandırın',
+  icons: {
+    icon: '/flat_icon.svg',
+  },
 }
 
 export default function RootLayout({

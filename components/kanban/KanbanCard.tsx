@@ -5,7 +5,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/base-badge'
+import { Badge } from '@/components/ui/badge-1'
 import { RequestWithUser } from '@/types/database'
 import { PRIORITIES, REQUEST_TYPES } from '@/lib/validations/request'
 import { formatDistanceToNow } from 'date-fns'
@@ -54,7 +54,7 @@ export default function KanbanCard({ request, isDragging = false, readOnly = fal
         <div className="flex items-center justify-between gap-2 mb-2">
           <span className="text-xs text-muted-foreground">{requestType?.label}</span>
           {priority && (
-            <Badge variant={priority.variant} appearance={priority.appearance} size="xs">{priority.label}</Badge>
+            <Badge variant={priority.variant} size="xs">{priority.label}</Badge>
           )}
         </div>
 
@@ -65,7 +65,7 @@ export default function KanbanCard({ request, isDragging = false, readOnly = fal
         {request.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-2">
             {request.tags.slice(0, 2).map(tag => (
-              <Badge key={tag} variant="secondary" appearance="light" size="xs">{tag}</Badge>
+              <Badge key={tag} variant="gray-subtle" size="xs">{tag}</Badge>
             ))}
             {request.tags.length > 2 && (
               <span className="text-xs text-muted-foreground">+{request.tags.length - 2}</span>

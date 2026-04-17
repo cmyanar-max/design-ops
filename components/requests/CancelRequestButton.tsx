@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,11 +46,7 @@ export default function CancelRequestButton({ requestId }: CancelRequestButtonPr
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger className={cn(
-        'inline-flex items-center justify-center rounded-md text-sm font-medium h-8 px-3',
-        'border border-destructive/40 text-destructive bg-transparent',
-        'hover:bg-destructive hover:text-white hover:border-destructive transition-colors'
-      )}>
+      <AlertDialogTrigger render={<Button variant="destructive" size="sm" />}>
         Talebi İptal Et
       </AlertDialogTrigger>
       <AlertDialogContent>

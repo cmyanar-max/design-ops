@@ -29,19 +29,19 @@ export const REQUEST_TYPES = [
 ] as const
 
 export const PRIORITIES = [
-  { value: 'low', label: 'Düşük', variant: 'secondary', appearance: 'default' },
-  { value: 'medium', label: 'Orta', variant: 'primary', appearance: 'default' },
-  { value: 'high', label: 'Yüksek', variant: 'warning', appearance: 'default' },
-  { value: 'urgent', label: 'Acil', variant: 'destructive', appearance: 'default' },
+  { value: 'low', label: 'Düşük', variant: 'gray-subtle' },
+  { value: 'medium', label: 'Orta', variant: 'blue' },
+  { value: 'high', label: 'Yüksek', variant: 'amber' },
+  { value: 'urgent', label: 'Acil', variant: 'red' },
 ] as const
 
 export const STATUSES = [
-  { value: 'new', label: 'Yeni', variant: 'secondary', appearance: 'default' },
-  { value: 'brief_review', label: 'Brief İnceleme', variant: 'warning', appearance: 'default' },
-  { value: 'design', label: 'Tasarımda', variant: 'primary', appearance: 'default' },
-  { value: 'revision', label: 'Revizyon', variant: 'warning', appearance: 'default' },
-  { value: 'approval', label: 'Onay Bekliyor', variant: 'info', appearance: 'default' },
-  { value: 'completed', label: 'Tamamlandı', variant: 'success', appearance: 'default' },
-  { value: 'archived', label: 'Arşivlendi', variant: 'secondary', appearance: 'default' },
-  { value: 'cancelled', label: 'İptal', variant: 'destructive', appearance: 'default' },
+  { value: 'new', label: 'Yeni', variant: 'gray-subtle' },
+  { value: 'brief_review', label: 'Brief İnceleme', variant: 'amber-subtle' },
+  { value: 'design', label: 'Tasarımda', variant: 'blue' },
+  { value: 'revision', label: 'Revizyon', variant: 'amber' },
+  { value: 'approval', label: 'Onay Bekliyor', variant: 'purple' },
+  { value: 'completed', label: 'Tamamlandı', variant: 'green' },
+  { value: 'archived', label: 'Arşivlendi', variant: 'gray-subtle' },
+  { value: 'cancelled', label: 'İptal', variant: 'red-subtle' },
 ] as const

@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
-import { NeonButton } from '@/components/ui/neon-button'
+import { Button } from '@/components/ui/button'
 
 interface Brand {
   id: string
@@ -47,7 +47,7 @@ export default async function BrandsPage() {
         </div>
         {canManageBrands && (
           <Link href="/brands/new">
-            <NeonButton size="lg" className="border-0">+ Yeni Marka</NeonButton>
+            <Button size="lg">+ Yeni Marka</Button>
           </Link>
         )}
       </div>
@@ -61,7 +61,7 @@ export default async function BrandsPage() {
           </p>
           {canManageBrands && (
             <Link href="/brands/new">
-              <NeonButton className="mt-2">İlk Markayı Ekle</NeonButton>
+              <Button className="mt-2">İlk Markayı Ekle</Button>
             </Link>
           )}
         </div>

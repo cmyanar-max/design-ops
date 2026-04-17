@@ -36,7 +36,7 @@ export default async function BrandDetailPage({ params }: { params: Promise<{ id
   ].filter(f => f.value)
 
   return (
-    <div className="p-6 space-y-6 max-w-3xl mx-auto">
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/brands" className="text-muted-foreground hover:text-foreground">
@@ -44,7 +44,7 @@ export default async function BrandDetailPage({ params }: { params: Promise<{ id
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
-          <h1 className="text-2xl font-bold">{brand.name}</h1>
+          <h1 className="font-heading text-2xl font-bold tracking-tight">{brand.name}</h1>
         </div>
         {isAdmin && (
           <Link href={`/brands/${id}/edit`} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
@@ -56,8 +56,8 @@ export default async function BrandDetailPage({ params }: { params: Promise<{ id
       {/* Renkler */}
       {colorFields.length > 0 && (
         <Card>
-          <CardHeader><CardTitle className="text-base">Renkler</CardTitle></CardHeader>
-          <CardContent>
+          <CardHeader className="pt-2 pb-0 px-6"><CardTitle className="text-base">Renkler</CardTitle></CardHeader>
+          <CardContent className="px-6 pb-6">
             <div className="flex flex-wrap gap-4">
               {colorFields.map(({ label, value }) => (
                 <div key={label} className="flex items-center gap-2">
@@ -79,8 +79,8 @@ export default async function BrandDetailPage({ params }: { params: Promise<{ id
       {/* Yazı Tipleri */}
       {(brand.font_primary || brand.font_secondary) && (
         <Card>
-          <CardHeader><CardTitle className="text-base">Yazı Tipleri</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
+          <CardHeader className="pt-2 pb-0 px-6"><CardTitle className="text-base">Yazı Tipleri</CardTitle></CardHeader>
+          <CardContent className="px-6 pb-6 space-y-2">
             {brand.font_primary && (
               <div>
                 <p className="text-xs text-muted-foreground">Ana</p>
@@ -100,8 +100,8 @@ export default async function BrandDetailPage({ params }: { params: Promise<{ id
       {/* AI Bağlamı */}
       {(brand.tone_of_voice || brand.target_audience || brand.guidelines_text) && (
         <Card>
-          <CardHeader><CardTitle className="text-base">AI Bağlamı</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
+          <CardHeader className="pt-2 pb-0 px-6"><CardTitle className="text-base">AI Bağlamı</CardTitle></CardHeader>
+          <CardContent className="px-6 pb-6 space-y-3">
             {brand.tone_of_voice && (
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-0.5">Ses Tonu</p>

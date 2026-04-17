@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Badge } from '@/components/ui/base-badge'
+import { Badge } from '@/components/ui/badge-1'
 import Link from 'next/link'
-import { NeonButton } from '@/components/ui/neon-button'
+import { Button } from '@/components/ui/button'
 
 const PLAN_LABELS: Record<string, string> = {
   free: 'Ücretsiz',
@@ -19,12 +19,12 @@ const STATUS_LABELS: Record<string, string> = {
   incomplete: 'Tamamlanmadı',
 }
 
-const STATUS_VARIANT: Record<string, { variant: 'warning' | 'success' | 'destructive' | 'outline', appearance?: 'light' }> = {
-  trialing: { variant: 'warning', appearance: 'light' },
-  active: { variant: 'success', appearance: 'light' },
-  past_due: { variant: 'destructive', appearance: 'light' },
-  canceled: { variant: 'outline' },
-  incomplete: { variant: 'destructive', appearance: 'light' },
+const STATUS_VARIANT: Record<string, { variant: 'amber-subtle' | 'green' | 'red-subtle' | 'pill' }> = {
+  trialing: { variant: 'amber-subtle' },
+  active: { variant: 'green' },
+  past_due: { variant: 'red-subtle' },
+  canceled: { variant: 'pill' },
+  incomplete: { variant: 'red-subtle' },
 }
 
 const PLAN_FEATURES: Record<string, string[]> = {
@@ -195,9 +195,9 @@ export default async function BillingPage() {
               href="mailto:sales@designops.app?subject=Pro Plan"
               className="inline-block"
             >
-              <NeonButton variant="solid" size="default">
+              <Button>
                 Satış ekibiyle iletişime geçin
-              </NeonButton>
+              </Button>
             </a>
           </CardContent>
         </Card>
@@ -214,9 +214,9 @@ export default async function BillingPage() {
               href="mailto:billing@designops.app"
               className="inline-block"
             >
-              <NeonButton variant="ghost" size="default">
+              <Button variant="ghost">
                 Fatura desteği
-              </NeonButton>
+              </Button>
             </a>
           </CardContent>
         </Card>

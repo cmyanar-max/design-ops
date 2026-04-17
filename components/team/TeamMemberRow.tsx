@@ -6,19 +6,19 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { getInitials } from '@/lib/utils'
-import { Badge } from '@/components/ui/base-badge'
+import { Badge } from '@/components/ui/badge-1'
 
 const ROLE_LABELS: Record<string, string> = { admin: 'Yönetici', designer: 'Tasarımcı', client: 'Proje Yönetici' }
-const ROLE_VARIANT: Record<string, { variant: 'info' | 'primary' | 'success', appearance: 'light' }> = {
-  admin: { variant: 'info', appearance: 'light' },
-  designer: { variant: 'primary', appearance: 'light' },
-  client: { variant: 'success', appearance: 'light' },
+const ROLE_VARIANT: Record<string, { variant: 'purple-subtle' | 'blue-subtle' | 'green-subtle' }> = {
+  admin: { variant: 'purple-subtle' },
+  designer: { variant: 'blue-subtle' },
+  client: { variant: 'green-subtle' },
 }
-const STATUS_VARIANT: Record<string, { variant: 'success' | 'warning' | 'destructive' | 'secondary', appearance: 'light' }> = {
-  active: { variant: 'success', appearance: 'light' },
-  invited: { variant: 'warning', appearance: 'light' },
-  suspended: { variant: 'destructive', appearance: 'light' },
-  deactivated: { variant: 'secondary', appearance: 'light' },
+const STATUS_VARIANT: Record<string, { variant: 'green-subtle' | 'amber-subtle' | 'red-subtle' | 'gray-subtle' }> = {
+  active: { variant: 'green-subtle' },
+  invited: { variant: 'amber-subtle' },
+  suspended: { variant: 'red-subtle' },
+  deactivated: { variant: 'gray-subtle' },
 }
 const STATUS_LABELS: Record<string, string> = {
   active: 'Aktif',
@@ -88,7 +88,7 @@ export default function TeamMemberRow({ member, currentUserId }: TeamMemberRowPr
       </div>
       <div className="flex items-center gap-2 shrink-0">
         {isSelf ? (
-          <Badge {...(ROLE_VARIANT[role] ?? { variant: 'secondary', appearance: 'light' })} size="sm">
+          <Badge {...(ROLE_VARIANT[role] ?? { variant: 'gray-subtle' })} size="sm">
             {ROLE_LABELS[role] ?? role}
           </Badge>
         ) : (
@@ -103,7 +103,7 @@ export default function TeamMemberRow({ member, currentUserId }: TeamMemberRowPr
             </SelectContent>
           </Select>
         )}
-        <Badge {...(STATUS_VARIANT[member.status] ?? { variant: 'secondary', appearance: 'light' })} size="sm">
+        <Badge {...(STATUS_VARIANT[member.status] ?? { variant: 'gray-subtle' })} size="sm">
           {STATUS_LABELS[member.status] ?? member.status}
         </Badge>
       </div>

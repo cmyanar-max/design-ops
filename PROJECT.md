@@ -1,147 +1,202 @@
-# DesignOps — Project Documentation
+# DesignOps — Proje Dokümantasyonu
 
-> Last updated: 2026-04-15
-
----
-
-## 1. Project Overview & Purpose
-
-**DesignOps** is a multi-tenant SaaS platform that streamlines design request workflows between clients (project managers), designers, and organization admins. It brings together task management, real-time collaboration, brand management, AI-assisted brief analysis, and billing into a single product.
-
-**Core value proposition:**
-- Clients submit design requests with rich briefs; AI automatically scores and improves them.
-- Designers receive auto-assigned work, track it in a Kanban board with live updates, and upload deliverables.
-- Yöneticiler ekibi, markaları, faturalandırmayı ve analitiği dashboard üzerinden yönetir.
-
-The application is built in **Turkish** (UI strings) and targets design agencies or in-house design teams.
+> Son güncelleme: 2026-04-16
 
 ---
 
-## 2. Tech Stack & Dependencies
+## İçindekiler
+
+1. [Proje Özeti ve Amaç](#1-proje-özeti-ve-amaç)
+2. [Tech Stack ve Bağımlılıklar](#2-tech-stack-ve-bağımlılıklar)
+3. [Klasör Yapısı](#3-klasör-yapısı)
+4. [Veritabanı Şeması](#4-veritabanı-şeması)
+5. [Kimlik Doğrulama Akışı](#5-kimlik-doğrulama-akışı)
+6. [Temel Özellikler ve Modüller](#6-temel-özellikler-ve-modüller)
+7. [Ortam Değişkenleri](#7-ortam-değişkenleri)
+8. [API Route'ları](#8-api-routeları)
+9. [Sayfalar ve Bileşenler](#9-sayfalar-ve-bileşenler)
+10. [Gerçek Zamanlı Mimari](#10-gerçek-zamanlı-mimari)
+11. [AI Entegrasyonu](#11-ai-entegrasyonu)
+12. [Deployment](#12-deployment)
+13. [Bilinen Sorunlar ve Yapılacaklar](#13-bilinen-sorunlar-ve-yapılacaklar)
+
+---
+
+## 1. Proje Özeti ve Amaç
+
+**DesignOps**, müşteriler (proje yöneticileri), tasarımcılar ve organizasyon yöneticileri arasındaki tasarım iş akışlarını düzenleyen çok kiracılı (multi-tenant) bir SaaS platformdur. Görev yönetimi, gerçek zamanlı işbirliği, marka yönetimi, yapay zeka destekli brief analizi ve faturalandırmayı tek bir üründe bir araya getirir.
+
+**Temel değer önerisi:**
+- Müşteriler, zengin brief'lerle tasarım talepleri gönderir; yapay zeka bunları otomatik olarak puanlar ve iyileştirir.
+- Tasarımcılar, otomatik atanan işlerini alır, canlı güncellemelerle Kanban panosunda takip eder ve çıktıları yükler.
+- Yöneticiler, ekibi, markaları, faturalandırmayı ve analitiği dashboard üzerinden yönetir.
+
+Uygulama **Türkçe** arayüzle inşa edilmiştir ve tasarım ajanslarını veya kurum içi tasarım ekiplerini hedefler.
+
+**Durum:** Temel özellikleri çalışan, erken aşamada bir ürün. Stripe faturalandırması ve bazı bildirim tercihleri henüz tamamlanmamış.
+
+---
+
+## 2. Tech Stack ve Bağımlılıklar
 
 ### Runtime
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 16.2.3 (App Router, Turbopack) |
-| Language | TypeScript 5 |
-| Runtime | Node.js (server components + API routes) |
-| Styling | Tailwind CSS v4 + shadcn/ui v4 |
 
-### Key Libraries
-| Category | Library | Purpose |
-|---|---|---|
-| Database / Auth | `@supabase/supabase-js`, `@supabase/ssr` | Supabase client (browser + server + admin) |
-| State / Data | `@tanstack/react-query` v5 | Server-state caching and mutations |
-| Forms | `react-hook-form` + `@hookform/resolvers` + `zod` v4 | Form management and validation |
-| Drag & Drop | `@dnd-kit/core`, `@dnd-kit/sortable` | Kanban drag-and-drop |
-| AI | `@google/generative-ai` | Google Gemini API (brief analysis, design suggestion, revision translation) |
-| Animation | `framer-motion`, `motion` | UI animations |
-| Charts | `recharts` | Dashboard analytics |
-| File Upload | `react-dropzone` | File upload UI |
-| Notifications | `sonner` | Toast notifications |
-| Billing | `stripe` | Payment processing (partially implemented) |
-| Email | `resend` | Transactional email |
-| UI Primitives | `@radix-ui/*`, `@base-ui/react`, `cmdk` | Accessible UI components |
-| Fonts | Bricolage Grotesque, Instrument Sans, JetBrains Mono | Google Fonts via next/font |
-| Date | `date-fns` v4 | Date formatting and manipulation |
+| Katman      | Teknoloji                                  |
+|-------------|---------------------------------------------|
+| Framework   | Next.js 16.2.3 (App Router, Turbopack)     |
+| Dil         | TypeScript 5 (strict mode)                  |
+| Runtime     | Node.js (server components + API routes)   |
+| Styling     | Tailwind CSS v4 + shadcn/ui v4             |
 
-### Dev Dependencies
+### Temel Kütüphaneler
+
+| Kategori        | Kütüphane                                         | Amaç                                          |
+|-----------------|---------------------------------------------------|-----------------------------------------------|
+| Veritabanı/Auth | `@supabase/supabase-js`, `@supabase/ssr`          | Supabase istemcisi (browser + server + admin) |
+| State/Data      | `@tanstack/react-query` v5                        | Sunucu durumu önbellekleme ve mutasyonlar     |
+| Formlar         | `react-hook-form` + `@hookform/resolvers` + `zod` | Form yönetimi ve doğrulama                    |
+| Sürükle-Bırak   | `@dnd-kit/core`, `@dnd-kit/sortable`              | Kanban sürükle-bırak                          |
+| AI              | `openai` SDK (Groq endpoint ile)                  | LLaMA modelleri — brief analizi, öneriler     |
+| Animasyon       | `framer-motion` v12                               | UI animasyonları                              |
+| Grafikler       | `recharts`                                        | Dashboard analitiği                           |
+| Dosya Yükleme   | `react-dropzone`                                  | Dosya yükleme UI                              |
+| Bildirimler     | `sonner`                                          | Toast bildirimleri                            |
+| Faturalandırma  | `stripe`                                          | Ödeme işleme (kısmen uygulandı)               |
+| E-posta         | `resend`                                          | İşlemsel e-posta                              |
+| UI Primitives   | `@radix-ui/*`, `@base-ui/react`, `cmdk`           | Erişilebilir UI bileşenleri                   |
+| Fontlar         | Bricolage Grotesque, Instrument Sans, JetBrains Mono | Google Fonts via next/font               |
+| Tarih           | `date-fns` v4                                     | Tarih formatlama ve manipülasyon              |
+
+### Geliştirici Bağımlılıkları
+
 - ESLint 9 + `eslint-config-next`
 - `@tailwindcss/postcss`
 - TypeScript strict mode
 
 ---
 
-## 3. Folder Structure
+## 3. Klasör Yapısı
 
 ```
 designops/
-├── app/                          # Next.js App Router
-│   ├── layout.tsx                # Root layout (fonts, ThemeProvider, Toaster)
-│   ├── globals.css               # Global styles
-│   ├── Providers.tsx             # App-level providers
+├── app/                              # Next.js App Router
+│   ├── layout.tsx                    # Root layout (fontlar, ThemeProvider, Toaster)
+│   ├── globals.css                   # Global Tailwind stilleri
+│   ├── Providers.tsx                 # Uygulama genelinde provider'lar
 │   │
-│   ├── (marketing)/              # Public marketing pages (no auth required)
-│   │   ├── layout.tsx            # Marketing layout (navbar + footer)
-│   │   ├── page.tsx              # Landing page
-│   │   ├── about/page.tsx        # About page
-│   │   └── pricing/page.tsx      # Pricing page
+│   ├── (marketing)/                  # Herkese açık pazarlama sayfaları (auth gerekmez)
+│   │   ├── layout.tsx                # Pazarlama layout (navbar + footer)
+│   │   ├── page.tsx                  # Landing sayfası
+│   │   ├── about/page.tsx            # Hakkında sayfası
+│   │   ├── pricing/page.tsx          # Fiyatlandırma sayfası
+│   │   ├── privacy/page.tsx          # Gizlilik politikası
+│   │   └── terms/page.tsx            # Kullanım şartları
 │   │
-│   ├── (auth)/                   # Authentication pages
-│   │   ├── layout.tsx            # Auth layout (full-screen white)
-│   │   ├── login/page.tsx        # Login form
-│   │   ├── signup/page.tsx       # Registration (creates org + yönetici user)
-│   │   ├── forgot-password/page.tsx
-│   │   ├── invite/[token]/page.tsx  # Invitation acceptance
-│   │   └── pending/page.tsx      # Awaiting yönetici approval screen
+│   ├── (auth)/                       # Kimlik doğrulama sayfaları
+│   │   ├── layout.tsx                # Auth layout (tam ekran)
+│   │   ├── login/page.tsx            # Giriş formu
+│   │   ├── signup/page.tsx           # Kayıt (org + yönetici kullanıcı oluşturur)
+│   │   ├── forgot-password/page.tsx  # Şifre sıfırlama
+│   │   ├── invite/[token]/page.tsx   # Davet kabul sayfası
+│   │   └── pending/page.tsx          # Yönetici onayı bekleme ekranı
 │   │
-│   ├── (onboarding)/             # New organization setup (post-signup)
-│   │   └── onboarding/page.tsx   # Org creation + team invite wizard
+│   ├── (onboarding)/                 # Yeni organizasyon kurulumu (kayıt sonrası)
+│   │   ├── onboarding/page.tsx       # Ana kurulum sihirbazı
+│   │   ├── create-organization/page.tsx
+│   │   ├── join/page.tsx
+│   │   └── role/page.tsx
 │   │
-│   ├── (app)/                    # Protected application pages
-│   │   ├── layout.tsx            # Auth guard + sidebar + topbar shell
-│   │   ├── dashboard/page.tsx    # Analytics dashboard (yönetici only)
+│   ├── (app)/                        # Korumalı uygulama sayfaları
+│   │   ├── layout.tsx                # Auth guard + sidebar + topbar kabuğu
+│   │   ├── dashboard/page.tsx        # Analitik dashboard (yönetici only)
 │   │   ├── requests/
-│   │   │   ├── page.tsx          # Request list with filters
-│   │   │   ├── new/page.tsx      # New request form
-│   │   │   └── [id]/page.tsx     # Request detail (comments, files, AI panel)
-│   │   ├── kanban/page.tsx       # Kanban board with real-time updates
+│   │   │   ├── page.tsx              # Talep listesi (filtreli)
+│   │   │   ├── new/page.tsx          # Yeni talep formu
+│   │   │   └── [id]/page.tsx         # Talep detayı (yorumlar, dosyalar, AI paneli)
+│   │   ├── kanban/page.tsx           # Gerçek zamanlı Kanban panosu
 │   │   ├── brands/
-│   │   │   ├── page.tsx          # Brand library list
-│   │   │   ├── new/page.tsx      # Create brand
-│   │   │   └── [id]/page.tsx     # Brand detail
-│   │   ├── team/page.tsx         # Team management (invite, approve, role change)
-│   │   ├── archive/page.tsx      # Completed / cancelled requests archive
-│   │   ├── notifications/page.tsx # All notifications
+│   │   │   ├── page.tsx              # Marka kütüphanesi listesi
+│   │   │   ├── new/page.tsx          # Marka oluştur
+│   │   │   └── [id]/page.tsx         # Marka detayı
+│   │   ├── team/page.tsx             # Ekip yönetimi (davet, onayla, rol değiştir)
+│   │   ├── archive/page.tsx          # Tamamlanan/iptal edilen talepler
+│   │   ├── notifications/page.tsx    # Tüm bildirimler
 │   │   └── settings/
-│   │       ├── page.tsx          # Settings overview
-│   │       ├── profile/page.tsx  # Profile settings
-│   │       ├── notifications/page.tsx
-│   │       └── billing/page.tsx  # Stripe billing (stub)
+│   │       ├── page.tsx              # Ayarlar genel bakış
+│   │       ├── profile/page.tsx      # Profil ayarları
+│   │       ├── organization/page.tsx # Organizasyon ayarları
+│   │       ├── notifications/page.tsx # Bildirim tercihleri
+│   │       └── billing/page.tsx      # Stripe faturalandırma (stub)
 │   │
-│   └── api/                      # API Routes (see section 8)
+│   └── api/                          # API Route'ları (21 endpoint)
+│       ├── auth/
+│       │   ├── callback/route.ts     # OAuth / magic-link kod değişimi
+│       │   ├── register/route.ts     # Kullanıcı kaydı
+│       │   └── check-email/route.ts  # E-posta kullanılabilirlik kontrolü
+│       ├── requests/
+│       │   ├── route.ts              # GET (liste), POST (oluştur)
+│       │   ├── [id]/route.ts         # GET, PATCH, DELETE
+│       │   └── [id]/status/route.ts  # PATCH (durum geçişi)
+│       ├── invitations/
+│       │   ├── route.ts              # POST (oluştur + e-posta gönder)
+│       │   ├── [token]/route.ts      # GET (token doğrula)
+│       │   └── [token]/accept/route.ts # POST (daveti kabul et)
+│       ├── team/
+│       │   ├── [userId]/approve/route.ts
+│       │   ├── [userId]/reject/route.ts
+│       │   └── [userId]/role/route.ts
+│       ├── ai/
+│       │   ├── analyze-brief/route.ts
+│       │   ├── design-suggestion/route.ts
+│       │   └── revision-translate/route.ts
+│       ├── notifications/mark-read/route.ts
+│       ├── upload/sign/route.ts      # İmzalı Supabase Storage URL'leri
+│       ├── organizations/
+│       │   ├── route.ts              # POST (org oluştur)
+│       │   └── rename/route.ts       # PATCH (org yeniden adlandır)
+│       ├── account/delete/route.ts   # Hesap silme
+│       └── join-requests/route.ts    # Katılma istekleri
 │
-├── components/
-│   ├── ui/                       # shadcn/ui primitives + custom atoms
-│   ├── layout/                   # AppSidebar, AppTopbar, NotificationBell
-│   ├── requests/                 # Request-specific components
-│   ├── kanban/                   # KanbanBoard, KanbanColumn, KanbanCard
-│   ├── comments/                 # CommentThread (threaded + real-time)
-│   ├── files/                    # FileUploadZone, FileList
-│   ├── ai/                       # BriefAIPanel
-│   ├── dashboard/                # Charts (RequestsByTypeChart)
-│   ├── team/                     # InviteTeamMember, ApproveUserButton
-│   ├── billing/                  # Billing components (stub)
-│   └── QueryProvider.tsx         # TanStack Query setup
+├── components/                       # 75+ bileşen dosyası
+│   ├── ui/                           # shadcn/ui primitives + özel atomlar
+│   ├── layout/                       # AppSidebar, AppTopbar, NotificationBell
+│   ├── requests/                     # Talep özel bileşenler
+│   ├── kanban/                       # KanbanBoard, KanbanColumn, KanbanCard
+│   ├── comments/                     # Yuvalanmış yorum sistemi (gerçek zamanlı)
+│   ├── files/                        # FileUploadZone, FileList
+│   ├── ai/                           # BriefAIPanel
+│   ├── dashboard/                    # RequestsByTypeChart, PeriodSelector
+│   ├── team/                         # InviteTeamMember, ApproveUserButton, RejectUserButton
+│   ├── billing/                      # Faturalandırma bileşenleri (stub)
+│   └── QueryProvider.tsx             # TanStack Query kurulumu
 │
 ├── lib/
 │   ├── supabase/
-│   │   ├── client.ts             # Browser Supabase client (with dev guard)
-│   │   ├── server.ts             # Server Supabase client + admin client (RLS bypass)
-│   │   ├── middleware.ts         # Session refresh helper for proxy.ts
+│   │   ├── client.ts                 # Browser Supabase istemcisi
+│   │   ├── server.ts                 # Sunucu Supabase istemcisi + admin istemci (RLS bypass)
+│   │   ├── middleware.ts             # Oturum yenileme yardımcısı
 │   │   └── queries/
-│   │       ├── requests.ts       # Request query helpers
-│   │       ├── users.ts          # User query helpers
-│   │       └── analytics.ts      # Dashboard data queries
+│   │       ├── requests.ts           # Talep sorgu yardımcıları
+│   │       ├── users.ts              # Kullanıcı sorgu yardımcıları
+│   │       └── analytics.ts          # Dashboard veri sorguları
 │   ├── ai/
-│   │   ├── client.ts             # Google Gemini singleton client
-│   │   ├── analyze-brief.ts      # Brief analysis orchestrator
+│   │   ├── client.ts                 # Groq singleton (openai SDK ile)
+│   │   ├── analyze-brief.ts          # Brief analiz orkestratörü
 │   │   └── prompts/
 │   │       ├── brief-analysis.ts
 │   │       ├── design-suggestion.ts
 │   │       └── revision-translation.ts
-│   ├── stripe/                   # Stripe helpers (planned, empty)
+│   ├── stripe/                       # Stripe yardımcıları (planlandı, boş)
 │   ├── validations/
-│   │   └── request.ts            # Zod schema for request creation
-│   ├── hooks/                    # Custom React hooks
-│   ├── email.ts                  # Resend email helpers
-│   └── utils.ts                  # cn(), castRows(), castRow(), getInitials()
+│   │   └── request.ts                # Talep oluşturma için Zod şeması
+│   ├── email.ts                      # Resend e-posta yardımcıları
+│   └── utils.ts                      # cn(), castRows(), castRow(), getInitials()
 │
 ├── types/
-│   └── database.ts               # Hand-written Supabase type definitions
+│   └── database.ts                   # El yazısıyla Supabase tip tanımları
 │
 ├── supabase/
-│   ├── migrations/               # SQL migration files (run in Supabase SQL Editor)
+│   ├── migrations/                   # SQL migration dosyaları (Supabase SQL Editor'de çalıştır)
 │   │   ├── 001_initial_schema.sql
 │   │   ├── 002_rls_policies.sql
 │   │   ├── 003_indexes.sql
@@ -150,172 +205,186 @@ designops/
 │   │   ├── 006_enhancements.sql
 │   │   ├── 007_fix_notifications.sql
 │   │   ├── 008_single_org.sql
-│   │   └── 009_add_soft_delete.sql
-│   ├── seed.sql                  # Optional test data
-│   ├── seed_test_users.sql
+│   │   ├── 009_add_soft_delete.sql
+│   │   ├── 010_onboarding_flow.sql
+│   │   ├── 011_join_request_notifications_and_org_rename.sql
+│   │   ├── 012_fix_self_notifications.sql
+│   │   └── 013_delete_account_rpc.sql
+│   ├── seed.sql                      # Opsiyonel test verisi
 │   └── test_users.sql
 │
-├── proxy.ts                      # Next.js 16 route guard (replaces middleware.ts)
-├── next.config.ts
-├── tsconfig.json
-└── components.json               # shadcn/ui config
+├── hooks/                            # Özel React hook'ları
+├── public/                           # Statik varlıklar, logolar
+├── next.config.ts                    # Turbopack yapılandırması
+├── tsconfig.json                     # TypeScript strict mode
+├── components.json                   # shadcn/ui yapılandırması
+└── CLAUDE.md                         # AI asistan talimatları
 ```
 
 ---
 
-## 4. Database Schema
+## 4. Veritabanı Şeması
 
-Managed by Supabase. Types are hand-authored in `types/database.ts`.
+Supabase (PostgreSQL) tarafından yönetilir. Tipler `types/database.ts` içinde el yazısıyla oluşturulmuştur.
 
-### Tables
+### Tablolar
 
-| Table | Description |
-|---|---|
-| `organizations` | Multi-tenant root. Holds plan, Stripe IDs, AI credit limits, storage limits. |
-| `users` | App users linked to an org. Roles: `admin`, `designer`, `client`. Statuses: `active`, `invited`, `suspended`, `deactivated`. |
-| `invitations` | Email invitations with HMAC token, expiry, and accepted timestamp. |
-| `brands` | Brand profiles per org: colors, fonts, logo, guidelines, tone of voice. |
-| `requests` | Design requests. Holds status machine state, priority, AI brief score, revision count, time tracking. |
-| `request_status_history` | Immutable status transition log (append-only). |
-| `comments` | Threaded comments on requests. Types: `general`, `revision_request`, `approval`, `rejection`, `ai_suggestion`. Supports internal-only and resolved flags. |
-| `files` | Uploaded files with versioning, `file_type` enum, and Supabase Storage path reference. |
-| `notifications` | Per-user notifications with `read_at` timestamp. |
-| `ai_requests` | Audit log for every Gemini API call (tokens, latency, status, feedback). |
-| `time_logs` | Designer time tracking per request. |
-| `audit_logs` | Full audit trail for create/update/delete/login/status-change events. |
+| Tablo                    | Açıklama                                                                                              |
+|--------------------------|-------------------------------------------------------------------------------------------------------|
+| `organizations`          | Multi-tenant kök. Plan, Stripe ID'leri, AI kredi limitleri, depolama limitleri.                       |
+| `users`                  | Org'a bağlı uygulama kullanıcıları. Roller: `admin`, `designer`, `client`. Durumlar: `active`, `invited`, `suspended`, `deactivated`. |
+| `invitations`            | HMAC token, son kullanma tarihi ve kabul zaman damgasıyla e-posta davetleri.                          |
+| `brands`                 | Org başına marka profilleri: renkler, fontlar, logo, yönergeler, ses tonu.                            |
+| `requests`               | Tasarım talepleri. Durum makinesi, öncelik, AI brief puanı, revizyon sayısı, zaman takibi.            |
+| `request_status_history` | Değişmez durum geçiş günlüğü (yalnızca ekleme).                                                      |
+| `comments`               | Taleplerdeki yorumlar. Türler: `general`, `revision_request`, `approval`, `rejection`, `ai_suggestion`. Dahili ve çözümlendi bayraklarını destekler. |
+| `files`                  | Sürüm oluşturma, `file_type` enum ve Supabase Storage yolu referansıyla yüklenen dosyalar.            |
+| `notifications`          | `read_at` zaman damgasıyla kullanıcı başına bildirimler.                                              |
+| `ai_requests`            | Her AI API çağrısı için denetim günlüğü (token'lar, gecikme, durum, geri bildirim).                  |
+| `time_logs`              | Talep başına tasarımcı zaman takibi.                                                                  |
+| `audit_logs`             | Oluşturma/güncelleme/silme/giriş/durum değişikliği olayları için tam denetim izi.                    |
 
-### Enum Types
+### Enum Türleri
 
-| Enum | Values |
-|---|---|
-| `UserRole` | `admin`, `designer`, `client` |
-| `UserStatus` | `active`, `invited`, `suspended`, `deactivated` |
-| `OrgPlan` | `free`, `pro`, `enterprise` |
-| `SubscriptionStatus` | `trialing`, `active`, `past_due`, `canceled`, `incomplete` |
-| `RequestType` | `social_post`, `banner`, `logo`, `video`, `presentation`, `email_template`, `brochure`, `infographic`, `other` |
-| `RequestStatus` | `new`, `brief_review`, `design`, `revision`, `approval`, `completed`, `archived`, `cancelled` |
-| `RequestPriority` | `low`, `medium`, `high`, `urgent` |
-| `CommentType` | `general`, `revision_request`, `approval`, `rejection`, `ai_suggestion` |
-| `FileType` | `logo`, `image`, `pdf`, `font`, `guideline`, `design_output`, `ai_generated`, `other` |
-| `NotificationType` | `request_assigned`, `status_changed`, `comment_added`, `revision_requested`, `approved`, `mention`, `deadline_reminder` |
-| `AIFeature` | `brief_analysis`, `design_suggestion`, `moodboard`, `revision_suggestion`, `brand_check` |
+| Enum                   | Değerler                                                                                                              |
+|------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| `UserRole`             | `admin`, `designer`, `client`                                                                                         |
+| `UserStatus`           | `active`, `invited`, `suspended`, `deactivated`                                                                       |
+| `OrgPlan`              | `free`, `pro`, `enterprise`                                                                                           |
+| `SubscriptionStatus`   | `trialing`, `active`, `past_due`, `canceled`, `incomplete`                                                            |
+| `RequestType`          | `social_post`, `banner`, `logo`, `video`, `presentation`, `email_template`, `brochure`, `infographic`, `other`        |
+| `RequestStatus`        | `new`, `brief_review`, `design`, `revision`, `approval`, `completed`, `archived`, `cancelled`                         |
+| `RequestPriority`      | `low`, `medium`, `high`, `urgent`                                                                                     |
+| `CommentType`          | `general`, `revision_request`, `approval`, `rejection`, `ai_suggestion`                                               |
+| `FileType`             | `logo`, `image`, `pdf`, `font`, `guideline`, `design_output`, `ai_generated`, `other`                                 |
+| `NotificationType`     | `request_assigned`, `status_changed`, `comment_added`, `revision_requested`, `approved`, `mention`, `deadline_reminder` |
+| `AIFeature`            | `brief_analysis`, `design_suggestion`, `moodboard`, `revision_suggestion`, `brand_check`                             |
 
-### Database Functions (RPCs)
+### Veritabanı Fonksiyonları (RPC'ler)
 
-| Function | Purpose |
-|---|---|
-| `get_dashboard_stats(p_org_id)` | Aggregate stats for the dashboard |
-| `get_requests_by_type(p_org_id, p_days?)` | Request counts grouped by type |
-| `get_designer_workload(p_org_id)` | Per-designer active request counts |
-| `get_avg_delivery_time(p_org_id)` | Average hours from `new` → `completed` |
-| `transition_request_status(p_request_id, p_new_status, p_note?)` | Atomic status change + history insert |
-| `check_and_consume_ai_credit(p_org_id)` | Returns `true` and decrements if credit available |
+| Fonksiyon                                             | Amaç                                                |
+|-------------------------------------------------------|-----------------------------------------------------|
+| `get_dashboard_stats(p_org_id)`                       | Dashboard için toplu istatistikler                  |
+| `get_requests_by_type(p_org_id, p_days?)`             | Türe göre gruplandırılmış talep sayıları            |
+| `get_designer_workload(p_org_id)`                     | Tasarımcı başına aktif talep sayıları               |
+| `get_avg_delivery_time(p_org_id)`                     | `new` → `completed` ortalama süresi (saat)          |
+| `transition_request_status(p_request_id, p_new_status, p_note?)` | Atomik durum değişikliği + geçmiş kaydı  |
+| `check_and_consume_ai_credit(p_org_id)`               | Kredi mevcutsa `true` döner ve azaltır              |
+| `delete_account(p_user_id)`                           | Kullanıcı hesabını ve ilgili verileri siler         |
 
-### RLS Helpers (public schema)
+### RLS Yardımcıları (public şema)
 
-`public.org_id()`, `public.is_admin()`, `public.is_designer_or_admin()` — used in RLS policies instead of `auth.*` schema functions.
+`public.org_id()`, `public.is_admin()`, `public.is_designer_or_admin()` — `auth.*` şema fonksiyonları yerine RLS politikalarında kullanılır.
 
 ---
 
-## 5. Authentication Flow
+## 5. Kimlik Doğrulama Akışı
 
-The app has **two independent authentication systems**:
-
-### 5.1 User Authentication (Supabase Auth)
+### 5.1 Kullanıcı Kimlik Doğrulama (Supabase Auth)
 
 ```
-User visits /login
-  → POST /api/auth/login (email + password)
-  → Supabase Auth issues session cookie
-  
+Kullanıcı /login'i ziyaret eder
+  → Supabase Auth ile e-posta + şifre girişi
+  → Oturum çerezi verilir
+
 OAuth / magic link
   → GET /api/auth/callback?code=...
-  → Supabase exchanges code for session
-  → Redirect to /dashboard
+  → Supabase kodu oturum ile değiştirir
+  → /dashboard'a yönlendir
 
-Route protection (proxy.ts — Next.js 16 middleware replacement):
-  - PUBLIC_ROUTES: /, /login, /signup, /forgot-password, /pricing, /pending, /about
-  - AUTH_ROUTES: redirect to /dashboard if already logged in
-  - /invite/* : always accessible
-  - All other routes: require session or redirect to /login?redirect=<path>
-
-(app)/layout.tsx — server-side guard:
-  1. getUser() — 401 → redirect /login
-  2. Fetch users row → not found + org exists → redirect /login?error=unregistered
-  3. Not found + no org → redirect /onboarding
-  4. status === 'invited' → redirect /pending
-  5. status === 'suspended' | 'deactivated' → redirect /login
+Route koruması ((app)/layout.tsx — sunucu tarafı guard):
+  1. getUser() — 401 → /login'e yönlendir
+  2. users satırı alınır → bulunamadı + org mevcut → /login?error=unregistered
+  3. Bulunamadı + org yok → /onboarding'e yönlendir
+  4. status === 'invited' → /pending'e yönlendir
+  5. status === 'suspended' | 'deactivated' → /login'e yönlendir
 ```
 
-### 5.2 Invitation Flow
+### 5.2 Onboarding Akışı
 
 ```
-Yönetici invites email via /team
-  → POST /api/invitations (creates invitations row + sends email via Resend)
-  → Invitee receives link: /invite/[token]
-  → GET /api/invitations/[token] — validates token, returns org/role info
-  → User fills name + password
-  → POST /api/invitations/[token]/accept — creates Supabase auth user + users row (status: 'invited')
-  → Redirect to /pending (await yönetici approval)
-  → Yönetici approves via team page → POST /api/team/[userId]/approve → status: 'active'
+Yeni kullanıcı /signup'ı ziyaret eder
+  → Rol seçimi (admin olarak başla / org'a katıl)
+  → Organizasyon oluştur veya katılma isteği gönder
+  → POST /api/organizations (org + yönetici kullanıcı oluşturur)
+  → /dashboard'a yönlendir
+```
+
+### 5.3 Davet Akışı
+
+```
+Yönetici /team üzerinden e-posta davet eder
+  → POST /api/invitations (davetler satırı oluşturur + Resend ile e-posta gönderir)
+  → Davet edilen kişi linki alır: /invite/[token]
+  → GET /api/invitations/[token] — token'ı doğrular, org/rol bilgisini döner
+  → Kullanıcı ad + şifre doldurur
+  → POST /api/invitations/[token]/accept — Supabase auth kullanıcısı + users satırı oluşturur (status: 'invited')
+  → /pending'e yönlendir (yönetici onayı bekle)
+  → Yönetici ekip sayfasından onaylar → POST /api/team/[userId]/approve → status: 'active'
 ```
 
 ---
 
-## 6. Key Features & Modules
+## 6. Temel Özellikler ve Modüller
 
-### Request Lifecycle
-- Clients create requests (`/requests/new`) with title, type, brand, priority, deadline, description, and tags.
-- On creation: auto-assigns to least-busy designer, triggers async AI brief analysis (non-blocking).
-- Free plan enforces `monthly_request_limit` (default: 10).
-- Status machine: `new` → `brief_review` → `design` → `revision` → `approval` → `completed`.
-- Each transition is recorded in `request_status_history` and triggers DB notifications.
+### 6.1 Talep Yaşam Döngüsü
 
-### Kanban Board
-- Real-time board powered by Supabase Realtime (`postgres_changes` on `requests` table).
-- Drag-and-drop via `@dnd-kit`. Updates during active drags are queued and flushed on drop.
-- Live connection status indicator (green/yellow/red dot).
-- Role-based: clients cannot update status.
+- Müşteriler, başlık, tür, marka, öncelik, son tarih, açıklama ve etiketlerle talep oluşturur (`/requests/new`).
+- Oluşturma sırasında: en az meşgul tasarımcıya otomatik atanır, asenkron AI brief analizi tetiklenir (engelleyici değil).
+- Ücretsiz plan `monthly_request_limit` uygular (varsayılan: 10).
+- **Durum makinesi:** `new` → `brief_review` → `design` → `revision` → `approval` → `completed`
+- Arşivleme ve iptal dalları mevcuttur.
+- Her geçiş `request_status_history`'ye kaydedilir ve veritabanı bildirimleri tetikler.
 
-### Brand Management
-- Organizations maintain a brand library with color palette, fonts, logo, guidelines, and tone of voice.
-- Brands can be attached to requests; AI analysis uses brand context.
+### 6.2 Kanban Panosu
 
-### AI Features (Google Gemini)
-All AI calls go through the server-side `lib/ai/client.ts` singleton using `GEMINI_API_KEY`.
+- Supabase Realtime (`requests` tablosunda `postgres_changes`) ile desteklenen gerçek zamanlı pano.
+- `@dnd-kit` aracılığıyla sürükle-bırak. Aktif sürükleme sırasındaki güncellemeler kuyruğa alınır, bırakıldığında boşaltılır.
+- Canlı bağlantı durumu göstergesi (yeşil/sarı/kırmızı nokta).
+- Rol bazlı: müşteriler durumu güncelleyemez.
 
-| Feature | Route / Entry Point | Model |
-|---|---|---|
-| Brief Analysis | `POST /api/ai/analyze-brief` / `lib/ai/analyze-brief.ts` | `gemini-2.0-flash` |
-| Design Suggestion | `POST /api/ai/design-suggestion` | `gemini-2.0-flash` |
-| Revision Translation | `POST /api/ai/revision-translate` | `gemini-2.0-flash` |
+### 6.3 Marka Yönetimi
 
-Credits are consumed via `check_and_consume_ai_credit` RPC. Usage is logged in `ai_requests`.
+- Organizasyonlar renk paleti, fontlar, logo, yönergeler ve ses tonu içeren marka kütüphanesi tutar.
+- Markalar taleplere eklenebilir; AI analizi marka bağlamını kullanır.
 
-### Notifications
-- DB-level triggers auto-create notifications on key events (new assignment, status change, etc.).
-- Real-time delivery via Supabase Realtime channel subscriptions in `NotificationBell`.
-- `POST /api/notifications/mark-read` marks one or all notifications as read.
+### 6.4 Dosya Yüklemeleri
 
-### File Uploads
-- Signed URL pattern: `POST /api/upload/sign` → server returns signed Supabase Storage URL → client uploads directly.
-- Metadata stored in `files` table after upload.
-- Versioning supported via `version` + `parent_file_id`.
+- İmzalı URL deseni: `POST /api/upload/sign` → sunucu imzalı Supabase Storage URL'si döner → istemci doğrudan yükler.
+- Meta veriler yüklemeden sonra `files` tablosunda saklanır.
+- `version` + `parent_file_id` aracılığıyla sürüm oluşturma desteklenir.
 
-### Analytics Dashboard
-- Uses Supabase RPC functions to fetch aggregate data.
-- Recharts renders: requests by type, designer workload, average delivery time.
+### 6.5 Yorumlar ve İşbirliği
 
-### Team Management
-- Admins invite users by email with a specific role.
-- Invited users appear in a "Pending Approvals" section until approved.
-- Role changes: `POST /api/team/[userId]/role`.
+- Taleplerde yuvalanmış yorumlar.
+- Yorum türleri: `general`, `revision_request`, `approval`, `rejection`, `ai_suggestion`.
+- Dahili notlar + çözümlendi bayrakları desteklenir.
+- Gerçek zamanlı güncellemeler.
+
+### 6.6 Bildirimler
+
+- Veritabanı seviyesinde trigger'lar, temel olaylarda (yeni atama, durum değişikliği vb.) otomatik bildirim oluşturur.
+- Supabase Realtime kanalı abonelikleri aracılığıyla `NotificationBell` içinde gerçek zamanlı teslimat.
+- `POST /api/notifications/mark-read` bir veya tüm bildirimleri okundu olarak işaretler.
+
+### 6.7 Analitik Dashboard
+
+- Toplu veri için Supabase RPC fonksiyonları.
+- Recharts görselleştirmeleri: türe göre talepler, tasarımcı iş yükü, ortalama teslimat süresi.
+- Dönem seçici (günlük, haftalık, aylık, yıllık, tümü).
+
+### 6.8 Ekip Yönetimi
+
+- Yöneticiler belirli bir rolle e-posta ile kullanıcı davet eder.
+- Davet edilen kullanıcılar onaylanana kadar "Bekleyen Onaylar" bölümünde görünür.
+- Rol değişikliği: `PATCH /api/team/[userId]/role`.
+- Kullanıcı reddetme: `POST /api/team/[userId]/reject`.
 
 ---
 
-## 7. Environment Variables
+## 7. Ortam Değişkenleri
 
-Create `.env.local` in the project root with:
+Proje kökünde `.env.local` oluşturun:
 
 ```env
 # Supabase
@@ -323,98 +392,280 @@ NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
 SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
 
-# Google Gemini AI
-GEMINI_API_KEY=<gemini-api-key>
+# AI (Groq — openai SDK uyumlu endpoint)
+GROQ_API_KEY=<groq-api-key>
 
-# Stripe (not yet implemented)
+# Uygulama URL'si
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# E-posta (Resend)
+RESEND_API_KEY=<resend-api-key>
+EMAIL_FROM=noreply@<domain>
+
+# Stripe (henüz uygulanmadı)
 STRIPE_SECRET_KEY=<stripe-secret-key>
 STRIPE_PUBLISHABLE_KEY=<stripe-publishable-key>
 STRIPE_WEBHOOK_SECRET=<stripe-webhook-secret>
-
-# Resend (email)
-RESEND_API_KEY=<resend-api-key>
+STRIPE_PRICE_PRO=<price-id>
+STRIPE_PRICE_ENTERPRISE=<price-id>
 ```
 
-> **Note:** In development, if `NEXT_PUBLIC_SUPABASE_URL` is not a valid HTTP URL, the Supabase client falls back to a placeholder and auth checks are skipped.
+> **Not:** `NEXT_PUBLIC_SUPABASE_URL` geçerli bir HTTP URL'si değilse, Supabase istemcisi placeholder'a geri düşer ve auth kontrolleri atlanır.
 
 ---
 
-## 8. API Routes
+## 8. API Route'ları
 
-### Auth
-| Method | Path | Description |
-|---|---|---|
-| GET | `/api/auth/callback` | OAuth / magic-link code exchange |
-| POST | `/api/auth/register` | Register new user (used during onboarding) |
+### Kimlik Doğrulama
 
-### Organizations
-| Method | Path | Description |
-|---|---|---|
-| POST | `/api/organizations` | Create organization + yönetici user (onboarding) |
+| Metod | Yol                        | Açıklama                                      |
+|-------|----------------------------|-----------------------------------------------|
+| GET   | `/api/auth/callback`       | OAuth / magic-link kod değişimi               |
+| POST  | `/api/auth/register`       | Yeni kullanıcı kaydı (onboarding sırasında)   |
+| GET   | `/api/auth/check-email`    | E-posta kullanılabilirlik kontrolü            |
 
-### Requests
-| Method | Path | Description |
-|---|---|---|
-| GET | `/api/requests` | List requests (filterable by status, assigned_to) |
-| POST | `/api/requests` | Create request (auto-assign, AI brief trigger, plan limit check) |
-| GET | `/api/requests/[id]` | Get single request with relations |
-| PATCH | `/api/requests/[id]` | Update request |
-| DELETE | `/api/requests/[id]` | Delete request |
-| PATCH | `/api/requests/[id]/status` | Transition request status |
+### Organizasyonlar
 
-### Invitations
-| Method | Path | Description |
-|---|---|---|
-| POST | `/api/invitations` | Send invitation email |
-| GET | `/api/invitations/[token]` | Validate token, get invitation details |
-| POST | `/api/invitations/[token]/accept` | Accept invitation, create user |
+| Metod | Yol                          | Açıklama                                   |
+|-------|------------------------------|--------------------------------------------|
+| POST  | `/api/organizations`         | Organizasyon + yönetici kullanıcı oluştur  |
+| PATCH | `/api/organizations/rename`  | Organizasyonu yeniden adlandır             |
 
-### Team
-| Method | Path | Description |
-|---|---|---|
-| POST | `/api/team/[userId]/approve` | Approve invited user (yönetici only) |
-| PATCH | `/api/team/[userId]/role` | Change user role |
+### Talepler
 
-### Notifications
-| Method | Path | Description |
-|---|---|---|
-| POST | `/api/notifications/mark-read` | Mark notification(s) as read |
+| Metod  | Yol                           | Açıklama                                             |
+|--------|-------------------------------|------------------------------------------------------|
+| GET    | `/api/requests`               | Talepleri listele (duruma, atanana göre filtrele)    |
+| POST   | `/api/requests`               | Talep oluştur (otomatik atama, AI brief, plan limiti)|
+| GET    | `/api/requests/[id]`          | İlişkilerle tek talep al                             |
+| PATCH  | `/api/requests/[id]`          | Talebi güncelle                                      |
+| DELETE | `/api/requests/[id]`          | Talebi sil                                           |
+| PATCH  | `/api/requests/[id]/status`   | Talep durumunu geçir                                 |
 
-### File Upload
-| Method | Path | Description |
-|---|---|---|
-| POST | `/api/upload/sign` | Get signed Supabase Storage upload URL |
+### Davetler
+
+| Metod | Yol                               | Açıklama                            |
+|-------|-----------------------------------|-------------------------------------|
+| POST  | `/api/invitations`                | Davet e-postası gönder              |
+| GET   | `/api/invitations/[token]`        | Token doğrula, davet detaylarını al |
+| POST  | `/api/invitations/[token]/accept` | Daveti kabul et, kullanıcı oluştur  |
+
+### Ekip
+
+| Metod | Yol                           | Açıklama                       |
+|-------|-------------------------------|--------------------------------|
+| POST  | `/api/team/[userId]/approve`  | Davet edilen kullanıcıyı onayla|
+| POST  | `/api/team/[userId]/reject`   | Katılma isteğini reddet        |
+| PATCH | `/api/team/[userId]/role`     | Kullanıcı rolünü değiştir      |
+
+### Bildirimler
+
+| Metod | Yol                             | Açıklama                        |
+|-------|---------------------------------|---------------------------------|
+| POST  | `/api/notifications/mark-read`  | Bildirimleri okundu olarak işaretle |
+
+### Dosya Yükleme
+
+| Metod | Yol               | Açıklama                                   |
+|-------|-------------------|--------------------------------------------|
+| POST  | `/api/upload/sign` | İmzalı Supabase Storage yükleme URL'si al |
 
 ### AI
-| Method | Path | Description |
-|---|---|---|
-| POST | `/api/ai/analyze-brief` | Run AI brief quality analysis |
-| POST | `/api/ai/design-suggestion` | Get AI design suggestions |
-| POST | `/api/ai/revision-translate` | Translate revision comments to design direction |
 
-### Account
-| Method | Path | Description |
-|---|---|---|
-| DELETE | `/api/account/delete` | Delete own account |
+| Metod | Yol                           | Açıklama                                 |
+|-------|-------------------------------|------------------------------------------|
+| POST  | `/api/ai/analyze-brief`       | AI brief kalite analizi çalıştır         |
+| POST  | `/api/ai/design-suggestion`   | AI tasarım önerileri al                  |
+| POST  | `/api/ai/revision-translate`  | Revizyon yorumlarını tasarım yönüne çevir|
+
+### Hesap & Diğer
+
+| Metod  | Yol                    | Açıklama               |
+|--------|------------------------|------------------------|
+| DELETE | `/api/account/delete`  | Kendi hesabını sil     |
+| POST   | `/api/join-requests`   | Org'a katılma isteği   |
 
 ---
 
-## 9. Known Issues & TODOs
+## 9. Sayfalar ve Bileşenler
 
-### Pending Implementation
-- **Stripe Billing** — `lib/stripe/` directory exists but is empty. `settings/billing/page.tsx` is a stub. Missing: `lib/stripe/client.ts`, `lib/stripe/plans.ts`, `app/api/webhooks/stripe/route.ts`, plan upgrade flow.
-- **n8n Email Notifications** — Email notification automation via n8n is not yet set up.
-- **Notification Preferences API** — `settings/notifications/page.tsx` exists but the backend API for saving preferences is not yet implemented.
-- **Supabase seed data** — `supabase/seed.sql` has not been run; test data is optional.
+### Sayfalar
 
-### Configuration Required
-- **Supabase Email Confirmation** — Must be disabled in Supabase Dashboard (Authentication → Providers → Email → toggle off). If enabled, onboarding redirects fail because the session is not established yet.
-- **STRIPE_* keys** — Not yet configured; billing is disabled until added.
-- **GEMINI_API_KEY** — Must have sufficient quota; AI features silently skip if credits run out.
+| Yol                            | Açıklama                              | Rol           |
+|--------------------------------|---------------------------------------|---------------|
+| `/`                            | Pazarlama landing sayfası             | Herkese açık  |
+| `/about`, `/pricing`, `/privacy`, `/terms` | Pazarlama sayfaları       | Herkese açık  |
+| `/login`                       | E-posta/şifre girişi                  | Misafir       |
+| `/signup`                      | Kayıt formu                           | Misafir       |
+| `/forgot-password`             | Şifre sıfırlama                       | Misafir       |
+| `/invite/[token]`              | Davet kabul sayfası                   | Misafir       |
+| `/pending`                     | Yönetici onayı bekleniyor             | Davetli       |
+| `/onboarding/role`             | Rol seçimi adımı                      | Yeni kullanıcı|
+| `/onboarding/create-organization` | Org oluşturma adımı              | Yeni kullanıcı|
+| `/onboarding/join`             | Org'a katılma adımı                   | Yeni kullanıcı|
+| `/dashboard`                   | Analitik dashboard                    | Admin         |
+| `/requests`                    | Talep listesi                         | Tümü          |
+| `/requests/new`                | Yeni talep formu                      | Client/Admin  |
+| `/requests/[id]`               | Talep detay sayfası                   | Tümü          |
+| `/kanban`                      | Gerçek zamanlı Kanban panosu          | Tümü          |
+| `/brands`                      | Marka kütüphanesi                     | Tümü          |
+| `/brands/new`                  | Marka oluştur                         | Admin         |
+| `/brands/[id]`                 | Marka detayı                          | Tümü          |
+| `/team`                        | Ekip yönetimi                         | Admin         |
+| `/archive`                     | Arşivlenmiş talepler                  | Tümü          |
+| `/notifications`               | Bildirimler merkezi                   | Tümü          |
+| `/settings/profile`            | Profil ayarları                       | Tümü          |
+| `/settings/organization`       | Organizasyon ayarları                 | Admin         |
+| `/settings/notifications`      | Bildirim tercihleri                   | Tümü          |
+| `/settings/billing`            | Stripe faturalandırma (stub)          | Admin         |
 
-### Technical Debt / Notes
-- **Untyped Supabase client** — `types/database.ts` is hand-written, not generated by `supabase gen types typescript`. Cast patterns (`as unknown as Type`) are used throughout. Run `supabase gen types typescript --project-id <id> > types/database.ts` when stable.
-- **`proxy.ts` instead of `middleware.ts`** — Next.js 16.2.3 uses `proxy.ts` as the route guard entry point (breaking change from Next.js 14/15 conventions).
-- **Shadcn UI v4 incompatibility** — `Button asChild` prop does not exist in v4. Pattern used: `buttonVariants()` + `<Link>` wrapper.
-- **AI model discrepancy in PROGRESS.md** — `PROGRESS.md` mentions Anthropic/Claude models but the actual implementation (`lib/ai/client.ts`) uses Google Gemini (`gemini-2.0-flash`). `getAnthropicClient` is an alias for backward compatibility.
-- **`/demo` route referenced in PROGRESS.md** — Listed as implemented but not found in current file tree (`app/(marketing)/demo/`). May have been removed or not committed.
+### Önemli Bileşenler
+
+| Bileşen              | Konum                         | Açıklama                                        |
+|----------------------|-------------------------------|-------------------------------------------------|
+| `ModernSidebar`      | `components/layout/`          | Navigasyon kenar çubuğu                         |
+| `AppTopbar`          | `components/layout/`          | Başlık ile kullanıcı menüsü                     |
+| `NotificationBell`   | `components/layout/`          | Gerçek zamanlı bildirim UI                      |
+| `KanbanBoard`        | `components/kanban/`          | Sürükle-bırak talep panosu                      |
+| `KanbanColumn`       | `components/kanban/`          | Tek durum sütunu                                |
+| `KanbanCard`         | `components/kanban/`          | Sürüklenebilir talep kartı                      |
+| `BriefAIPanel`       | `components/ai/`              | AI analiz sonuçları paneli                      |
+| `CommentThread`      | `components/comments/`        | Yuvalanmış yorum tartışması                     |
+| `FileUploadZone`     | `components/files/`           | Dosya yükleme dropzone                          |
+| `InviteTeamMember`   | `components/team/`            | E-posta davet formu                             |
+| `ApproveUserButton`  | `components/team/`            | Kullanıcı onaylama eylemi                       |
+| `RejectUserButton`   | `components/team/`            | Kullanıcı reddetme eylemi                       |
+| `RequestsByTypeChart`| `components/dashboard/`       | Recharts analitik grafiği                       |
+| `PeriodSelector`     | `components/dashboard/`       | Analitik dönem filtresi                         |
+| `QueryProvider`      | `components/`                 | TanStack Query kurulumu                         |
+
+---
+
+## 10. Gerçek Zamanlı Mimari
+
+Uygulama gerçek zamanlı işlevler için Supabase Realtime kullanır:
+
+### Kanallar
+
+| Kanal                | Tablo        | Olaylar          | Kullanım                        |
+|----------------------|--------------|------------------|---------------------------------|
+| `requests-realtime`  | `requests`   | INSERT, UPDATE   | Kanban pano canlı güncellemeleri|
+| `notifications-*`    | `notifications` | INSERT        | NotificationBell canlı sayaç    |
+| `comments-*`         | `comments`   | INSERT, UPDATE   | Yorum thread canlı güncellemeleri |
+
+### Sürükle-Bırak + Realtime Senkronizasyonu
+
+Kullanıcı bir Kanban kartını sürüklediğinde:
+1. Gelen Realtime güncellemeleri kuyruğa alınır (görüntü donmaz).
+2. Kullanıcı bıraktığında `PATCH /api/requests/[id]/status` çağrılır.
+3. Kuyruklanmış güncellemeler boşaltılır ve uygulanır.
+
+---
+
+## 11. AI Entegrasyonu
+
+### Sağlayıcı: Groq (OpenAI SDK uyumlu)
+
+`lib/ai/client.ts` — OpenAI SDK `baseURL` Groq endpoint'e yönlendirilmiş Groq singleton istemcisini yönetir.
+
+```typescript
+// Kullanılan model'ler
+const SMART_MODEL = "llama-3.3-70b-versatile";  // Kompleks analiz için
+const FAST_MODEL  = "llama-3.1-8b-instant";      // Hızlı yanıtlar için
+```
+
+### AI Özellikleri
+
+| Özellik               | Route                          | Model        | Açıklama                                              |
+|-----------------------|--------------------------------|--------------|-------------------------------------------------------|
+| Brief Analizi         | `POST /api/ai/analyze-brief`   | Smart (70B)  | Brief puanlama (0-100), boşlukları tespit et, iyileştir |
+| Tasarım Önerisi       | `POST /api/ai/design-suggestion` | Smart (70B) | Renk paleti, font, layout önerileri                  |
+| Revizyon Çevirisi     | `POST /api/ai/revision-translate` | Fast (8B)  | Revizyon yorumlarını tasarım yönüne çevir             |
+
+### AI Kredi Sistemi
+
+- Her org'un `ai_credits_remaining` sayacı vardır.
+- AI çağrısı öncesinde `check_and_consume_ai_credit(p_org_id)` RPC çalışır.
+- Kredi kalmadıysa istek reddedilir.
+- Tüm AI çağrıları `ai_requests` tablosuna kaydedilir (token, gecikme, durum, geri bildirim).
+
+### Prompt'lar
+
+```
+lib/ai/prompts/
+├── brief-analysis.ts       # Brief kalite değerlendirme talimatları
+├── design-suggestion.ts    # Tasarım öneri talimatları
+└── revision-translation.ts # Revizyon çeviri talimatları
+```
+
+---
+
+## 12. Deployment
+
+### Geliştirme
+
+```bash
+npm run dev       # Turbopack ile development server
+npm run build     # Production build
+npm run start     # Production server
+npm run lint      # ESLint
+```
+
+### Vercel Deployment
+
+Platform **Vercel** için optimize edilmiştir:
+- `next/font` otomatik optimizasyon
+- Sunucusuz uyumlu API route'ları
+- Edge runtime uyumluluğu
+
+### Supabase Kurulumu
+
+Migration'lar otomatik çalıştırılmaz. Supabase Dashboard → SQL Editor üzerinden sırayla çalıştırın:
+
+```
+001_initial_schema.sql
+002_rls_policies.sql
+003_indexes.sql
+004_functions.sql
+005_realtime.sql
+006_enhancements.sql
+007_fix_notifications.sql
+008_single_org.sql
+009_add_soft_delete.sql
+010_onboarding_flow.sql
+011_join_request_notifications_and_org_rename.sql
+012_fix_self_notifications.sql
+013_delete_account_rpc.sql
+```
+
+**Zorunlu Supabase Yapılandırması:**
+- Authentication → Providers → Email → "Confirm email" → **KAPALI**
+- Realtime → aktifleştirilmeli (`requests`, `notifications`, `comments` tabloları için)
+
+---
+
+## 13. Bilinen Sorunlar ve Yapılacaklar
+
+### Tamamlanmamış Özellikler
+
+| Özellik                     | Durum        | Notlar                                                                      |
+|-----------------------------|--------------|-----------------------------------------------------------------------------|
+| Stripe Faturalandırma        | Stub         | `lib/stripe/` boş. Fiyat listesi, yükseltme akışı, webhook handler eksik.  |
+| Bildirim Tercihleri API     | UI mevcut    | `settings/notifications/page.tsx` var ama backend API henüz yok.            |
+| E-posta Otomasyonu (n8n)    | Planlandı    | Kurulmadı.                                                                  |
+| Seed Verisi                 | Opsiyonel    | `supabase/seed.sql` henüz çalıştırılmadı.                                   |
+
+### Teknik Borç
+
+| Konu                                | Açıklama                                                                                       |
+|-------------------------------------|------------------------------------------------------------------------------------------------|
+| Tiplenmemiş Supabase istemcisi      | `types/database.ts` el yazısıyla; `supabase gen types typescript` kullanılmalı.               |
+| Cast desenleri                      | Tiplenmemiş istemci nedeniyle `as unknown as Type` kullanımı yaygın.                           |
+| shadcn/ui v4 uyumsuzluğu           | `Button asChild` prop'u yok. Çözüm: `buttonVariants()` + `<Link>` wrapper.                    |
+| AI model açıklaması                 | Bazı eski yorumlar "Gemini" diyor ama gerçek implementasyon Groq/LLaMA kullanıyor.             |
+
+### Yapılandırma Gereksinimleri
+
+- **Supabase Email Onayı** — Supabase Dashboard'da devre dışı bırakılmalı. Açıksa onboarding yönlendirmeleri başarısız olur.
+- **GROQ_API_KEY** — Yeterli kota olmalı; kredi biterse AI özellikleri sessizce atlanır.
+- **STRIPE_* anahtarları** — Eklenene kadar faturalandırma devre dışı.

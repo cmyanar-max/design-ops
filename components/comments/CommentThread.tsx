@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/base-badge'
+import { Badge } from '@/components/ui/badge-1'
 import { toast } from 'sonner'
 import { CommentWithUser } from '@/types/database'
 import { formatDistanceToNow } from 'date-fns'
@@ -30,17 +30,30 @@ export default function CommentThread({ requestId, currentUserId, isDesignerOrAd
   const supabase = createClient()
 
   const fetchComments = async () => {
-    const { data } = await supabase
+    const { data, error: fetchError } = await supabase
       .from('comments')
       .select(`
         *,
-        author:users(id, name, avatar_url, role)
+        author:user_id(id, name, avatar_url, role)
       `)
       .eq('request_id', requestId)
-      .is('parent_id', null)
       .order('created_at', { ascending: true })
 
-    if (data) setComments(data as CommentWithUser[])
+    if (fetchError) {
+      console.error('fetchComments error:', fetchError)
+      setLoading(false)
+      return
+    }
+
+    if (data) {
+      const all = data as CommentWithUser[]
+      const topLevel = all.filter(c => !c.parent_id)
+      const replies = all.filter(c => c.parent_id)
+      topLevel.forEach(c => {
+        c.replies = replies.filter(r => r.parent_id === c.id)
+      })
+      setComments(topLevel)
+    }
     setLoading(false)
   }
 
@@ -83,6 +96,7 @@ export default function CommentThread({ requestId, currentUserId, isDesignerOrAd
       setReplyTo(null)
       setIsInternal(false)
       setCommentType('general')
+      await fetchComments()
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Yorum gönderilemedi')
     } finally {
@@ -212,11 +226,11 @@ function CommentItem({ comment, currentUserId, isDesignerOrAdmin, onReply, onRes
 }) {
   const author = comment.author as { id: string; name: string; avatar_url: string | null; role: string }
 
-  const commentTypeVariant: Record<string, { variant: 'warning' | 'success' | 'destructive' | 'info', appearance: 'light' }> = {
-    revision_request: { variant: 'warning', appearance: 'light' },
-    approval: { variant: 'success', appearance: 'light' },
-    rejection: { variant: 'destructive', appearance: 'light' },
-    ai_suggestion: { variant: 'info', appearance: 'light' },
+  const commentTypeVariant: Record<string, { variant: 'amber-subtle' | 'green-subtle' | 'red-subtle' | 'purple-subtle' }> = {
+    revision_request: { variant: 'amber-subtle' },
+    approval: { variant: 'green-subtle' },
+    rejection: { variant: 'red-subtle' },
+    ai_suggestion: { variant: 'purple-subtle' },
   }
 
   const commentTypeLabels: Record<string, string> = {
@@ -241,7 +255,7 @@ function CommentItem({ comment, currentUserId, isDesignerOrAdmin, onReply, onRes
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-medium text-sm">{author?.name}</span>
           {comment.is_internal && (
-            <Badge variant="warning" appearance="light" size="sm">İç Not</Badge>
+            <Badge variant="amber-subtle" size="sm">İç Not</Badge>
           )}
           {comment.comment_type !== 'general' && commentTypeVariant[comment.comment_type] && (
             <Badge {...commentTypeVariant[comment.comment_type]} size="sm">
@@ -249,7 +263,7 @@ function CommentItem({ comment, currentUserId, isDesignerOrAdmin, onReply, onRes
             </Badge>
           )}
           {comment.is_resolved && (
-            <Badge variant="success" appearance="light" size="sm">✓ Çözüldü</Badge>
+            <Badge variant="green-subtle" size="sm">✓ Çözüldü</Badge>
           )}
           <span className="text-xs text-muted-foreground ml-auto">
             {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: tr })}
@@ -271,6 +285,21 @@ function CommentItem({ comment, currentUserId, isDesignerOrAdmin, onReply, onRes
             </button>
           )}
         </div>
+
+        {comment.replies && comment.replies.length > 0 && (
+          <div className="mt-3 space-y-3 pl-3 border-l border-border">
+            {comment.replies.map(reply => (
+              <CommentItem
+                key={reply.id}
+                comment={reply}
+                currentUserId={currentUserId}
+                isDesignerOrAdmin={isDesignerOrAdmin}
+                onReply={() => {}}
+                onResolve={onResolve}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

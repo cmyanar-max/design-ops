@@ -128,8 +128,8 @@ export function ModernSidebar({ user, className = "" }: ModernSidebarProps) {
         <div className="flex items-center justify-between p-5 border-b border-border bg-secondary/30">
           {!isCollapsed && (
             <div className="flex items-center space-x-2.5">
-              <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center shadow-sm">
-                <span className="text-primary-foreground font-bold text-base">D</span>
+              <div className="w-9 h-9 flex items-center justify-center">
+                <img src="/flat_icon.svg" alt="DesignOps" className="w-9 h-9" />
               </div>
               <div className="flex flex-col">
                 <span className="font-semibold text-foreground text-base">DesignOps</span>
@@ -139,8 +139,8 @@ export function ModernSidebar({ user, className = "" }: ModernSidebarProps) {
           )}
 
           {isCollapsed && (
-            <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center mx-auto shadow-sm">
-              <span className="text-primary-foreground font-bold text-base">D</span>
+            <div className="w-9 h-9 flex items-center justify-center mx-auto">
+              <img src="/flat_icon.svg" alt="DesignOps" className="w-9 h-9" />
             </div>
           )}
 

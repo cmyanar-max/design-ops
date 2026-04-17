@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Badge } from '@/components/ui/base-badge'
-import { NeonButton } from '@/components/ui/neon-button'
+import { Badge } from '@/components/ui/badge-1'
+import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button'
 import { STATUSES } from '@/lib/validations/request'
 import RequestsList, { RequestRow } from '@/components/requests/RequestsList'
@@ -75,7 +75,7 @@ export default async function RequestsPage({
         </div>
         {currentUser.role !== 'designer' && (
           <Link href="/requests/new">
-            <NeonButton size="lg" className="border-0">+ Yeni Talep</NeonButton>
+            <Button size="lg">+ Yeni Talep</Button>
           </Link>
         )}
       </div>
@@ -84,10 +84,9 @@ export default async function RequestsPage({
       <div className="flex flex-wrap gap-2">
         <Link href="/requests">
           <Badge
-            variant={!params.status ? 'primary' : 'outline'}
-            size="lg"
-            shape="circle"
-            className="cursor-pointer px-3"
+            variant={!params.status ? 'blue' : 'pill'}
+            size="md"
+            className="cursor-pointer"
           >
             Tümü
           </Badge>
@@ -95,10 +94,9 @@ export default async function RequestsPage({
         {STATUSES.filter(s => !['archived', 'cancelled'].includes(s.value)).map(s => (
           <Link key={s.value} href={`/requests?status=${s.value}`}>
             <Badge
-              variant={params.status === s.value ? 'primary' : 'outline'}
-              size="lg"
-              shape="circle"
-              className="cursor-pointer px-3"
+              variant={params.status === s.value ? s.variant : 'pill'}
+              size="md"
+              className="cursor-pointer"
             >
               {s.label}
             </Badge>
