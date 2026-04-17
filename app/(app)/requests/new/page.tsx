@@ -21,9 +21,9 @@ export default function NewRequestPage() {
   const [loading, setLoading] = useState(false)
   const [brands, setBrands] = useState<Brand[]>([])
   const [tagInput, setTagInput] = useState('')
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
 
-  const { register, handleSubmit, watch, setValue, getValues, formState: { errors } } = useForm<RequestFormValues>({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<RequestFormValues>({
     resolver: zodResolver(requestSchema),
     defaultValues: { priority: 'medium', tags: [] },
   })
@@ -34,7 +34,7 @@ export default function NewRequestPage() {
     supabase.from('brands').select('id, name, primary_color').then(({ data }) => {
       if (data) setBrands(data as Brand[])
     })
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [supabase])
 
   const addTag = () => {
     const t = tagInput.trim().toLowerCase()
@@ -77,7 +77,7 @@ export default function NewRequestPage() {
       <div>
         <h1 className="text-2xl font-bold">Yeni Tasarım Talebi</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Brief'i ne kadar detaylı doldurursanız, AI o kadar iyi öneri üretir.
+          Brief&apos;i ne kadar detaylı doldurursanız, AI o kadar iyi öneri üretir.
         </p>
       </div>
 

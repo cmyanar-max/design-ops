@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/logger'
 
 const MAX_RENAMES = 2
 
@@ -79,7 +80,7 @@ export async function POST(request: NextRequest) {
       remaining: MAX_RENAMES - (updated.name_change_count ?? 0),
     })
   } catch (err) {
-    console.error('[POST /api/organizations/rename]', err)
+    logError('[POST /api/organizations/rename]', err)
     return NextResponse.json({ error: 'Organizasyon adı güncellenemedi' }, { status: 500 })
   }
 }

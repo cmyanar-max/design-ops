@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { Check, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { NeonButton } from '@/components/ui/neon-button'
 
 type Plan = {

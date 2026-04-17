@@ -19,6 +19,7 @@ import KanbanColumn from './KanbanColumn'
 import KanbanCard from './KanbanCard'
 import { RequestWithUser, RequestStatus } from '@/types/database'
 import { STATUSES } from '@/lib/validations/request'
+import { castRow } from '@/lib/utils'
 
 const KANBAN_COLUMNS: RequestStatus[] = [
   'new', 'brief_review', 'design', 'revision', 'approval', 'completed'
@@ -36,15 +37,15 @@ export default function KanbanBoard({ initialRequests, orgId, readOnly = false }
   const [requests, setRequests] = useState<RequestWithUser[]>(initialRequests)
   const [activeRequest, setActiveRequest] = useState<RequestWithUser | null>(null)
   const [realtimeStatus, setRealtimeStatus] = useState<RealtimeStatus>('connecting')
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
   // Drag sırasında gelen Realtime güncellemelerini erteleme için ref
   const isDraggingRef = useRef(false)
   const pendingUpdatesRef = useRef<Array<() => void>>([])
 
-  // readOnly modda sensör yok → drag başlatılamaz
-  const sensors = useSensors(
-    ...(readOnly ? [] : [useSensor(PointerSensor, { activationConstraint: { distance: 8 } })])
-  )
+  const pointerSensor = useSensor(PointerSensor, {
+    activationConstraint: { distance: 8 },
+  })
+  const sensors = useSensors(pointerSensor)
 
   // Önce pointerWithin (pointer kolona girdi mi?), yoksa closestCenter fallback
   const collisionDetection: CollisionDetection = (args) => {
@@ -127,12 +128,13 @@ export default function KanbanBoard({ initialRequests, orgId, readOnly = false }
             .eq('id', newRow.id)
             .single()
 
-          if (data) {
+          const request = castRow<RequestWithUser>(data)
+          if (request) {
             setRequests(prev => {
-              if (prev.find(r => r.id === data.id)) return prev // zaten var
-              return [data as unknown as RequestWithUser, ...prev]
+              if (prev.find(r => r.id === request.id)) return prev // zaten var
+              return [request, ...prev]
             })
-            toast.info(`Yeni talep: "${(data as { title: string }).title}"`)
+            toast.info(`Yeni talep: "${request.title}"`)
           }
         }
       )
@@ -157,7 +159,7 @@ export default function KanbanBoard({ initialRequests, orgId, readOnly = false }
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [orgId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [orgId, supabase])
 
   const handleDragStart = (event: DragStartEvent) => {
     isDraggingRef.current = true
@@ -238,7 +240,7 @@ export default function KanbanBoard({ initialRequests, orgId, readOnly = false }
       </div>
 
       <DndContext
-        sensors={sensors}
+        sensors={readOnly ? undefined : sensors}
         collisionDetection={collisionDetection}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}

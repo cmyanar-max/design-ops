@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   Home,
-  User,
   Settings,
   LogOut,
   Menu,
@@ -12,7 +12,6 @@ import {
   BarChart3,
   FileText,
   Bell,
-  HelpCircle,
   Kanban,
   Users,
   Archive
@@ -21,7 +20,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
-import { cn } from '@/lib/utils';
 import NotificationBell from '@/components/layout/NotificationBell';
 import { createClient } from '@/lib/supabase/client';
 
@@ -35,7 +33,12 @@ interface NavigationItem {
 }
 
 interface ModernSidebarProps {
-  user: any;
+  user: {
+    id: string;
+    name: string;
+    role: string;
+    avatar_url?: string | null;
+  };
   className?: string;
 }
 
@@ -79,10 +82,6 @@ export function ModernSidebar({ user, className = "" }: ModernSidebarProps) {
 
   const toggleSidebar = () => setIsOpen(!isOpen);
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
-
-  const getActiveItem = () => {
-    return filteredItems.find(item => pathname.startsWith(item.href))?.id || "dashboard";
-  };
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -129,7 +128,7 @@ export function ModernSidebar({ user, className = "" }: ModernSidebarProps) {
           {!isCollapsed && (
             <div className="flex items-center space-x-2.5">
               <div className="w-9 h-9 flex items-center justify-center">
-                <img src="/flat_icon.svg" alt="DesignOps" className="w-9 h-9" />
+                <Image src="/flat_icon.svg" alt="DesignOps" width={36} height={36} className="w-9 h-9" />
               </div>
               <div className="flex flex-col">
                 <span className="font-semibold text-foreground text-base">DesignOps</span>
@@ -140,7 +139,7 @@ export function ModernSidebar({ user, className = "" }: ModernSidebarProps) {
 
           {isCollapsed && (
             <div className="w-9 h-9 flex items-center justify-center mx-auto">
-              <img src="/flat_icon.svg" alt="DesignOps" className="w-9 h-9" />
+              <Image src="/flat_icon.svg" alt="DesignOps" width={36} height={36} className="w-9 h-9" />
             </div>
           )}
 

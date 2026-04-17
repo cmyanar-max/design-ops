@@ -22,22 +22,23 @@ export default async function RequestDetailPage({ params }: { params: Params }) 
   const { data: { user: authUser } } = await supabase.auth.getUser()
   if (!authUser) redirect('/login')
 
-  const { data: currentUser } = await supabase
-    .from('users')
-    .select('id, role, organization_id')
-    .eq('id', authUser.id)
-    .single() as { data: { id: string; role: string; organization_id: string } | null }
-
-  const { data: rawRequest } = await supabase
-    .from('requests')
-    .select(`
-      *,
-      creator:users!requests_created_by_fkey(id, name, avatar_url, email),
-      assignee:users!requests_assigned_to_fkey(id, name, avatar_url, email),
-      brand:brands(id, name, primary_color, secondary_color, font_primary, font_secondary, tone_of_voice, target_audience)
-    `)
-    .eq('id', id)
-    .single()
+  const [{ data: currentUser }, { data: rawRequest }] = await Promise.all([
+    supabase
+      .from('users')
+      .select('id, role, organization_id')
+      .eq('id', authUser.id)
+      .single(),
+    supabase
+      .from('requests')
+      .select(`
+        *,
+        creator:users!requests_created_by_fkey(id, name, avatar_url, email),
+        assignee:users!requests_assigned_to_fkey(id, name, avatar_url, email),
+        brand:brands(id, name, primary_color, secondary_color, font_primary, font_secondary, tone_of_voice, target_audience)
+      `)
+      .eq('id', id)
+      .single(),
+  ])
 
   type RequestDetail = Request & {
     creator: { id: string; name: string; avatar_url: string | null; email: string }
@@ -331,7 +332,6 @@ export default async function RequestDetailPage({ params }: { params: Params }) 
             <TabsContent value="files" className="mt-4">
               <FileList
                 requestId={id}
-                organizationId={request.organization_id}
                 canUpload={true}
               />
             </TabsContent>

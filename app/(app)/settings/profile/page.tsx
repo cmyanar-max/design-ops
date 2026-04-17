@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -11,7 +11,6 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
-import { useEffect } from 'react'
 
 interface ProfileData {
   id: string
@@ -26,7 +25,7 @@ interface ProfileData {
 
 export default function ProfileSettingsPage() {
   const router = useRouter()
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -68,7 +67,7 @@ export default function ProfileSettingsPage() {
       }
     }
     load()
-  }, [])
+  }, [router, supabase])
 
   const handleSave = async () => {
     if (!profile) return
@@ -113,8 +112,7 @@ export default function ProfileSettingsPage() {
       // Oturumu kapat ve login sayfasına yönlendir
       await supabase.auth.signOut()
       router.push('/login')
-    } catch (error) {
-      console.error('Delete account error:', error)
+    } catch {
       toast.error('Hesap silinirken bir hata oluştu')
     } finally {
       setDeleting(false)

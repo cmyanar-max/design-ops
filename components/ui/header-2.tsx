@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { MenuToggleIcon } from '@/components/ui/menu-toggle-icon';
@@ -49,7 +50,14 @@ export function Header() {
 			>
 				{/* Logo */}
 				<Link href="/" className="flex items-center">
-					<img src="/do_logo.svg" alt="DesignOps Logo" className="h-7 w-auto" />
+					<Image
+						src="/do_logo.svg"
+						alt="DesignOps Logo"
+						width={128}
+						height={28}
+						priority
+						className="h-7 w-auto"
+					/>
 				</Link>
 
 				{/* Desktop links */}

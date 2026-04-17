@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { sendInviteEmail } from '@/lib/email'
+import { logError } from '@/lib/logger'
 
 const inviteSchema = z.object({
   email: z.string().email(),
@@ -77,7 +78,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ invitation, inviteUrl }, { status: 201 })
   } catch (err: unknown) {
-    console.error('[POST /api/invitations]', err)
+    logError('[POST /api/invitations]', err)
     return NextResponse.json({ error: 'Davet gönderilemedi' }, { status: 500 })
   }
 }

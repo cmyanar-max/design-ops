@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { cn } from '@/lib/utils'
@@ -16,7 +17,7 @@ interface KanbanColumnProps {
   readOnly?: boolean
 }
 
-export default function KanbanColumn({ status, label, variant, requests, canDrop = true, readOnly = false }: KanbanColumnProps) {
+function KanbanColumn({ status, label, variant, requests, canDrop = true, readOnly = false }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: status, disabled: !canDrop })
 
   return (
@@ -56,3 +57,5 @@ export default function KanbanColumn({ status, label, variant, requests, canDrop
     </div>
   )
 }
+
+export default memo(KanbanColumn)

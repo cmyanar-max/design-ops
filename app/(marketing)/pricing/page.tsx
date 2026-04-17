@@ -1,6 +1,3 @@
-import Link from 'next/link'
-import { buttonVariants } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import { PricingCards } from '@/components/ui/pricing-cards'
 import { Header } from '@/components/ui/navbar'
 import { Footer } from '@/components/ui/footer'

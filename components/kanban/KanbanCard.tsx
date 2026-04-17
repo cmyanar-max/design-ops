@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import Link from 'next/link'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -17,7 +18,7 @@ interface KanbanCardProps {
   readOnly?: boolean
 }
 
-export default function KanbanCard({ request, isDragging = false, readOnly = false }: KanbanCardProps) {
+function KanbanCard({ request, isDragging = false, readOnly = false }: KanbanCardProps) {
   const {
     attributes, listeners, setNodeRef, transform, transition, isDragging: isSortableDragging
   } = useSortable({ id: request.id, disabled: readOnly })
@@ -34,7 +35,6 @@ export default function KanbanCard({ request, isDragging = false, readOnly = fal
     !['completed', 'cancelled', 'archived'].includes(request.status)
 
   const assignee = request.assignee as { id: string; name: string; avatar_url: string | null } | null
-  const creator = request.creator as { id: string; name: string; avatar_url: string | null }
 
   return (
     <div
@@ -122,3 +122,5 @@ export default function KanbanCard({ request, isDragging = false, readOnly = fal
     </div>
   )
 }
+
+export default memo(KanbanCard)

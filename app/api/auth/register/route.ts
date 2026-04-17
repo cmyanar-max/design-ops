@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/logger'
 
 const registerSchema = z.object({
   name: z.string().min(2).max(100),
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true }, { status: 201 })
   } catch (err: unknown) {
-    console.error('[POST /api/auth/register]', err)
+    logError('[POST /api/auth/register]', err)
     return NextResponse.json({ error: 'Kayıt tamamlanamadı' }, { status: 500 })
   }
 }

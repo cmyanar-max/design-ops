@@ -54,11 +54,36 @@ export default async function TeamPage() {
   // Müşteri olmayan ve admin olmayan roller buraya erişemez
   if (!isAdmin && !isClient) redirect('/requests')
 
-  const { data: members } = await supabase
+  const membersPromise = supabase
     .from('users')
     .select('id, name, email, role, status, avatar_url, last_login_at, created_at')
     .eq('organization_id', currentUser.organization_id)
     .order('created_at', { ascending: true })
+
+  const invitationsPromise = isAdmin
+    ? supabase
+      .from('invitations')
+      .select('id, email, role, expires_at, created_at')
+      .eq('organization_id', currentUser.organization_id)
+      .is('accepted_at', null)
+      .gte('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false })
+    : Promise.resolve({ data: null })
+
+  const joinRequestsPromise = isAdmin
+    ? createAdminClient()
+      .from('join_requests')
+      .select('id, user_id, role, created_at')
+      .eq('org_id', currentUser.organization_id)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: true })
+    : Promise.resolve({ data: null })
+
+  const [{ data: members }, { data: invitations }, { data: rawJoinReqs }] = await Promise.all([
+    membersPromise,
+    invitationsPromise,
+    joinRequestsPromise,
+  ])
 
   const allMembers = (members ?? []) as TeamMember[]
   const activeMembers = allMembers.filter(m => m.status === 'active')
@@ -82,13 +107,6 @@ export default async function TeamPage() {
   let joinReqMembers: TeamMember[] = []
   if (isAdmin) {
     const adminClient = createAdminClient()
-    const { data: rawJoinReqs } = await adminClient
-      .from('join_requests')
-      .select('id, user_id, role, created_at')
-      .eq('org_id', currentUser.organization_id)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: true })
-
     const joinReqRows = (rawJoinReqs ?? []) as JoinRequestRow[]
     const userIds = joinReqRows.map(jr => jr.user_id)
 
@@ -167,16 +185,6 @@ export default async function TeamPage() {
     ...joinReqMembers,
   ]
   const teamMembers = allMembers.filter(m => m.status !== 'invited' && m.status !== 'pending_approval')
-
-  const [{ data: invitations }] = await Promise.all([
-    supabase
-      .from('invitations')
-      .select('id, email, role, expires_at, created_at')
-      .eq('organization_id', currentUser.organization_id)
-      .is('accepted_at', null)
-      .gte('expires_at', new Date().toISOString())
-      .order('created_at', { ascending: false }),
-  ])
 
   const pendingInvites = (invitations ?? []) as Invitation[]
 

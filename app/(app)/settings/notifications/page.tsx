@@ -59,7 +59,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 
 export default function NotificationSettingsPage() {
   const router = useRouter()
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
   const [userId, setUserId] = useState<string | null>(null)
   const [prefs, setPrefs] = useState<NotifPrefs>(DEFAULT_PREFS)
   const [loading, setLoading] = useState(false)
@@ -79,7 +79,7 @@ export default function NotificationSettingsPage() {
       }
     }
     load()
-  }, [])
+  }, [router, supabase])
 
   const handleSave = async () => {
     if (!userId) return

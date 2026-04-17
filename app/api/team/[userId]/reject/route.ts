@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/logger'
 
 export async function POST(
   _request: Request,
@@ -97,7 +98,7 @@ export async function POST(
 
     return NextResponse.json({ error: 'Bu kullanıcı reddedilemez' }, { status: 409 })
   } catch (err: unknown) {
-    console.error('[POST /api/team/[userId]/reject]', err)
+    logError('[POST /api/team/[userId]/reject]', err)
     return NextResponse.json({ error: 'Red işlemi başarısız' }, { status: 500 })
   }
 }

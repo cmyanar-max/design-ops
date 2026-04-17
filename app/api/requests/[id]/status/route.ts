@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/logger'
 
 const statusSchema = z.object({
   status: z.enum(['new', 'brief_review', 'design', 'revision', 'approval', 'completed', 'archived', 'cancelled']),
@@ -33,7 +34,7 @@ export async function POST(request: Request, { params }: { params: Params }) {
 
     return NextResponse.json({ success: true })
   } catch (err: unknown) {
-    console.error('[POST /api/requests/[id]/status]', err)
+    logError('[POST /api/requests/[id]/status]', err)
     return NextResponse.json({ error: 'Durum güncellenemedi' }, { status: 500 })
   }
 }

@@ -66,8 +66,9 @@ export default async function BillingPage() {
   if (!org) redirect('/settings')
 
   const trialEndsAt = org.trial_ends_at ? new Date(org.trial_ends_at) : null
+  const now = new Date()
   const trialDaysLeft = trialEndsAt
-    ? Math.max(0, Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    ? Math.max(0, Math.ceil((trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
     : null
   const aiCreditsPercent = org.ai_credits_limit > 0
     ? Math.round((org.ai_credits_used / org.ai_credits_limit) * 100)

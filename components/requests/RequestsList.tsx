@@ -4,14 +4,17 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { getInitials } from '@/lib/utils'
+import { castRow, getInitials } from '@/lib/utils'
 import { STATUSES, PRIORITIES, REQUEST_TYPES } from '@/lib/validations/request'
 import { Badge } from '@/components/ui/badge-1'
 import BulkDeleteButton from './BulkDeleteButton'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/animated-table-rows'
-import { Trash2 } from 'lucide-react'
+
+const STATUS_MAP = Object.fromEntries(STATUSES.map(status => [status.value, status]))
+const PRIORITY_MAP = Object.fromEntries(PRIORITIES.map(priority => [priority.value, priority]))
+const REQUEST_TYPE_MAP = Object.fromEntries(REQUEST_TYPES.map(type => [type.value, type]))
 
 export interface RequestRow {
   id: string
@@ -36,7 +39,7 @@ interface RequestsListProps {
 export default function RequestsList({ initialRequests, orgId, isAdmin = false }: RequestsListProps) {
   const [requests, setRequests] = useState<RequestRow[]>(initialRequests)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
   const router = useRouter()
 
   useEffect(() => {
@@ -62,7 +65,8 @@ export default function RequestsList({ initialRequests, orgId, isAdmin = false }
             .eq('id', newId)
             .single()
           if (data) {
-            const row = data as unknown as RequestRow
+            const row = castRow<RequestRow>(data)
+            if (!row) return
             setRequests(prev => [row, ...prev])
           }
         }
@@ -106,7 +110,7 @@ export default function RequestsList({ initialRequests, orgId, isAdmin = false }
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [orgId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [orgId, supabase])
 
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds(prev => {
@@ -185,9 +189,9 @@ export default function RequestsList({ initialRequests, orgId, isAdmin = false }
           <TableBody>
             <AnimatePresence>
               {requests.map((req, index) => {
-                const status = STATUSES.find(s => s.value === req.status)
-                const priority = PRIORITIES.find(p => p.value === req.priority)
-                const requestType = REQUEST_TYPES.find(t => t.value === req.request_type)
+                const status = STATUS_MAP[req.status]
+                const priority = PRIORITY_MAP[req.priority]
+                const requestType = REQUEST_TYPE_MAP[req.request_type]
                 const assignee = req.assignee as { name: string; avatar_url: string | null } | null
                 const isOverdue =
                   req.deadline &&

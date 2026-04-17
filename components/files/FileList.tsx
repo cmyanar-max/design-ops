@@ -10,7 +10,6 @@ import { File as FileRecord } from '@/types/database'
 
 interface FileListProps {
   requestId: string
-  organizationId: string
   canUpload?: boolean
 }
 
@@ -30,10 +29,10 @@ function fileIcon(mimeType: string | null): string {
   return '📦'
 }
 
-export default function FileList({ requestId, organizationId, canUpload }: FileListProps) {
+export default function FileList({ requestId, canUpload }: FileListProps) {
   const [files, setFiles] = useState<FileRecord[]>([])
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
 
   const fetchFiles = useCallback(async () => {
     const { data } = await supabase
@@ -44,7 +43,7 @@ export default function FileList({ requestId, organizationId, canUpload }: FileL
 
     if (data) setFiles(data)
     setLoading(false)
-  }, [requestId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [requestId, supabase])
 
   const getSignedUrl = async (storagePath: string) => {
     const { data } = await supabase.storage
@@ -67,8 +66,27 @@ export default function FileList({ requestId, organizationId, canUpload }: FileL
   }
 
   useEffect(() => {
-    fetchFiles()
-  }, [fetchFiles])
+    let isActive = true
+
+    async function loadFiles() {
+      setLoading(true)
+      const { data } = await supabase
+        .from('files')
+        .select('*')
+        .eq('request_id', requestId)
+        .order('created_at', { ascending: false })
+
+      if (!isActive) return
+      if (data) setFiles(data)
+      setLoading(false)
+    }
+
+    void loadFiles()
+
+    return () => {
+      isActive = false
+    }
+  }, [requestId, supabase])
 
   if (loading) {
     return (

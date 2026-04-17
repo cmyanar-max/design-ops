@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/logger'
+
+const roleSchema = z.object({
+  role: z.enum(['admin', 'designer', 'client']),
+})
 
 export async function PATCH(
   request: Request,
@@ -27,11 +33,11 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { role } = body as { role: string }
-
-    if (!['admin', 'designer', 'client'].includes(role)) {
+    const parsed = roleSchema.safeParse(body)
+    if (!parsed.success) {
       return NextResponse.json({ error: 'Geçersiz rol' }, { status: 400 })
     }
+    const { role } = parsed.data
 
     const adminClient = createAdminClient()
 
@@ -55,7 +61,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true })
   } catch (err: unknown) {
-    console.error('[PATCH /api/team/[userId]/role]', err)
+    logError('[PATCH /api/team/[userId]/role]', err)
     return NextResponse.json({ error: 'Rol güncellenemedi' }, { status: 500 })
   }
 }

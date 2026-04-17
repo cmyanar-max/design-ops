@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { requestSchema } from '@/lib/validations/request'
 import { runBriefAnalysis } from '@/lib/ai/analyze-brief'
+import { logError } from '@/lib/logger'
 
 // En az iş yüklü tasarımcıyı bul ve ata (2 sorgu — N+1 yok)
 async function assignToLeastBusyDesigner(
@@ -18,7 +19,6 @@ async function assignToLeastBusyDesigner(
       .eq('status', 'active')
 
     if (!designers || designers.length === 0) {
-      console.log('[assignToLeastBusyDesigner] No active designers found')
       return null
     }
 
@@ -41,10 +41,9 @@ async function assignToLeastBusyDesigner(
         (countMap[curr.id] ?? 0) < (countMap[prev.id] ?? 0) ? curr : prev
     )
 
-    console.log(`[assignToLeastBusyDesigner] Assigned to ${leastBusy.name} (${countMap[leastBusy.id]} active tasks)`)
     return leastBusy.id
   } catch (error) {
-    console.error('[assignToLeastBusyDesigner] Error:', error)
+    logError('[assignToLeastBusyDesigner] Error:', error)
     return null
   }
 }
@@ -58,6 +57,13 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
     const assignedTo = searchParams.get('assigned_to')
+    const page = Math.max(1, Number.parseInt(searchParams.get('page') ?? '1', 10) || 1)
+    const pageSize = Math.min(
+      100,
+      Math.max(1, Number.parseInt(searchParams.get('pageSize') ?? '25', 10) || 25)
+    )
+    const from = (page - 1) * pageSize
+    const to = from + pageSize - 1
 
     let query = supabase
       .from('requests')
@@ -66,8 +72,9 @@ export async function GET(request: Request) {
         creator:users!requests_created_by_fkey(id, name, avatar_url),
         assignee:users!requests_assigned_to_fkey(id, name, avatar_url),
         brand:brands(id, name, primary_color)
-      `)
+      `, { count: 'exact' })
       .order('created_at', { ascending: false })
+      .range(from, to)
 
     if (status) {
       const statuses = status.split(',')
@@ -78,12 +85,18 @@ export async function GET(request: Request) {
       query = query.eq('assigned_to', assignedTo)
     }
 
-    const { data, error } = await query
+    const { data, error, count } = await query
     if (error) throw error
 
-    return NextResponse.json(data)
+    return NextResponse.json({
+      data,
+      total: count ?? 0,
+      page,
+      pageSize,
+      totalPages: Math.ceil((count ?? 0) / pageSize),
+    })
   } catch (err: unknown) {
-    console.error('[GET /api/requests]', err)
+    logError('[GET /api/requests]', err)
     return NextResponse.json({ error: 'Talepler alınamadı' }, { status: 500 })
   }
 }
@@ -163,12 +176,12 @@ export async function POST(request: Request) {
 
     // AI brief analizi tetikle (async — bloklama yok)
     runBriefAnalysis(newRequest.id, currentUser.id).catch(err =>
-      console.error('[AI brief analysis]', err)
+      logError('[AI brief analysis]', err)
     )
 
     return NextResponse.json(newRequest, { status: 201 })
   } catch (err: unknown) {
-    console.error('[POST /api/requests]', err)
+    logError('[POST /api/requests]', err)
     return NextResponse.json({ error: 'Talep oluşturulamadı' }, { status: 500 })
   }
 }

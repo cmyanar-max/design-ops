@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
@@ -27,8 +27,15 @@ function detectFileType(mimeType: string): FileType {
 
 export default function FileUploadZone({ requestId, onUploadComplete }: FileUploadZoneProps) {
   const [uploading, setUploading] = useState<UploadingFile[]>([])
+  const clearTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const uploadFile = async (file: File, onProgress: (pct: number) => void) => {
+  useEffect(() => {
+    return () => {
+      if (clearTimeoutRef.current) clearTimeout(clearTimeoutRef.current)
+    }
+  }, [])
+
+  const uploadFile = useCallback(async (file: File, onProgress: (pct: number) => void) => {
     // 1. Signed URL al
     const signRes = await fetch('/api/upload/sign', {
       method: 'POST',
@@ -83,9 +90,13 @@ export default function FileUploadZone({ requestId, onUploadComplete }: FileUplo
 
     if (!metaRes.ok) throw new Error('Dosya metadata kaydedilemedi')
     onProgress(100)
-  }
+  }, [requestId])
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    if (clearTimeoutRef.current) {
+      clearTimeout(clearTimeoutRef.current)
+    }
+
     const uploadItems: UploadingFile[] = acceptedFiles.map(f => ({
       name: f.name,
       progress: 0,
@@ -93,6 +104,7 @@ export default function FileUploadZone({ requestId, onUploadComplete }: FileUplo
     }))
 
     setUploading(uploadItems)
+    let hadError = false
 
     await Promise.all(
       acceptedFiles.map(async (file, i) => {
@@ -106,6 +118,7 @@ export default function FileUploadZone({ requestId, onUploadComplete }: FileUplo
             prev.map((u, j) => j === i ? { ...u, progress: 100, status: 'done' } : u)
           )
         } catch (err: unknown) {
+          hadError = true
           setUploading(prev =>
             prev.map((u, j) => j === i ? { ...u, status: 'error' } : u)
           )
@@ -114,14 +127,13 @@ export default function FileUploadZone({ requestId, onUploadComplete }: FileUplo
       })
     )
 
-    const allDone = uploadItems.every(u => u.status !== 'error')
-    if (allDone) {
+    if (!hadError) {
       toast.success(`${acceptedFiles.length} dosya yüklendi`)
       onUploadComplete?.()
     }
 
-    setTimeout(() => setUploading([]), 2000)
-  }, [requestId]) // eslint-disable-line react-hooks/exhaustive-deps
+    clearTimeoutRef.current = setTimeout(() => setUploading([]), 2000)
+  }, [onUploadComplete, uploadFile])
 
   const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
     onDrop,

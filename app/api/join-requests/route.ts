@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/logger'
 
 const schema = z.object({
   orgName: z.string().min(2, 'Organizasyon adı en az 2 karakter olmalı').trim(),
@@ -28,24 +29,23 @@ export async function POST(request: NextRequest) {
 
     const adminClient = createAdminClient()
 
-    // Organizasyonu isme göre bul (tam eşleşme, büyük/küçük harf duyarsız)
-    const { data: org } = await adminClient
-      .from('organizations')
-      .select('id, name')
-      .ilike('name', orgName)
-      .limit(1)
-      .single()
+    const [{ data: org }, { data: existingUser }] = await Promise.all([
+      adminClient
+        .from('organizations')
+        .select('id, name')
+        .ilike('name', orgName)
+        .limit(1)
+        .single(),
+      adminClient
+        .from('users')
+        .select('id, status, organization_id')
+        .eq('id', user.id)
+        .single(),
+    ])
 
     if (!org) {
       return NextResponse.json({ error: 'Organizasyon bulunamadı' }, { status: 404 })
     }
-
-    // Mevcut kullanıcı kaydını kontrol et
-    const { data: existingUser } = await adminClient
-      .from('users')
-      .select('id, status, organization_id')
-      .eq('id', user.id)
-      .single()
 
     if (existingUser) {
       if (existingUser.status === 'active') {
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true }, { status: 201 })
   } catch (err: unknown) {
-    console.error('[POST /api/join-requests]', err)
+    logError('[POST /api/join-requests]', err)
     return NextResponse.json({ error: 'Katılım isteği gönderilemedi' }, { status: 500 })
   }
 }

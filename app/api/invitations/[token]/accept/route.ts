@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/logger'
 
 const acceptSchema = z.object({
   name: z.string().min(2),
@@ -71,7 +72,7 @@ export async function POST(
 
     return NextResponse.json({ success: true }, { status: 201 })
   } catch (err: unknown) {
-    console.error('[POST /api/invitations/[token]/accept]', err)
+    logError('[POST /api/invitations/[token]/accept]', err)
     return NextResponse.json({ error: 'Hesap oluşturulamadı' }, { status: 500 })
   }
 }

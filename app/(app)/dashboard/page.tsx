@@ -18,7 +18,7 @@ interface RecentRequest {
 import { getDashboardStatsByPeriod, getRequestsByType, getDesignerWorkload } from '@/lib/supabase/queries/analytics'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import RequestsByTypeChart from '@/components/dashboard/RequestsByTypeChart'
+import LazyRequestsByTypeChart from '@/components/dashboard/LazyRequestsByTypeChart'
 import PeriodSelector from '@/components/dashboard/PeriodSelector'
 import { StatsCards } from '@/components/ui/stats-cards'
 import Link from 'next/link'
@@ -115,7 +115,7 @@ export default async function DashboardPage({
           </CardHeader>
           <CardContent className="px-6 pb-6">
             {byType.length > 0 ? (
-              <RequestsByTypeChart data={byType} />
+              <LazyRequestsByTypeChart data={byType} />
             ) : (
               <p className="text-sm text-muted-foreground text-center py-8">Henüz talep yok</p>
             )}

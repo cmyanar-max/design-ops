@@ -6,6 +6,7 @@ interface AppTopbarProps {
   user: User
 }
 
-export default function AppTopbar({ user: _user }: AppTopbarProps) {
+export default function AppTopbar({ user }: AppTopbarProps) {
+  void user
   return null
 }

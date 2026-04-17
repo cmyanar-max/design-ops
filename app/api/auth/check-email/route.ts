@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,13 +24,13 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     if (error) {
-      console.error('check-email error:', error)
+      logError('check-email error:', error instanceof Error ? error.message : 'unknown')
       return NextResponse.json({ error: 'Kontrol başarısız' }, { status: 500 })
     }
 
     return NextResponse.json({ exists: !!data })
   } catch (err) {
-    console.error('check-email exception:', err)
+    logError('check-email exception:', err instanceof Error ? err.message : 'unknown')
     return NextResponse.json({ error: 'Bir hata oluştu' }, { status: 500 })
   }
 }

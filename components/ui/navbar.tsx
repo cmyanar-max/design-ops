@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Equal, X } from 'lucide-react'
-import { Button } from '@/components/ui/liquid-glass-button'
 import React from 'react'
 import { cn } from '@/lib/utils'
 
@@ -33,7 +33,14 @@ export const Header = () => {
                                 href="/"
                                 aria-label="home"
                                 className="flex gap-2 items-center text-primary">
-                                <img src="/do_logo.svg" alt="DesignOps Logo" className="h-7 w-auto" />
+                                <Image
+                                    src="/do_logo.svg"
+                                    alt="DesignOps Logo"
+                                    width={128}
+                                    height={28}
+                                    priority
+                                    className="h-7 w-auto"
+                                />
                             </Link>
 
                             <button

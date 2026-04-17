@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -24,12 +24,12 @@ interface NotificationBellProps {
 export default function NotificationBell({ userId, variant = 'topbar', isCollapsed = false, isActive = false }: NotificationBellProps) {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [open, setOpen] = useState(false)
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
 
   const unreadCount = notifications.filter(n => !n.read_at).length
 
-  const fetchNotifications = async () => {
-    const { data, error } = await supabase
+  const fetchNotifications = useCallback(async () => {
+    const { data } = await supabase
       .from('notifications')
       .select('*')
       .eq('user_id', userId)
@@ -37,7 +37,7 @@ export default function NotificationBell({ userId, variant = 'topbar', isCollaps
       .limit(20)
 
     if (data) setNotifications(data)
-  }
+  }, [supabase, userId])
 
   const markAllRead = async () => {
     await fetch('/api/notifications/mark-read', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
@@ -60,7 +60,22 @@ export default function NotificationBell({ userId, variant = 'topbar', isCollaps
   }
 
   useEffect(() => {
-    fetchNotifications()
+    let isActive = true
+
+    async function loadNotifications() {
+      const { data } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      if (isActive && data) {
+        setNotifications(data)
+      }
+    }
+
+    void loadNotifications()
 
     // Realtime subscription
     const channel = supabase
@@ -80,10 +95,11 @@ export default function NotificationBell({ userId, variant = 'topbar', isCollaps
     const poll = setInterval(fetchNotifications, 15000)
 
     return () => {
+      isActive = false
       supabase.removeChannel(channel)
       clearInterval(poll)
     }
-  }, [userId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchNotifications, supabase, userId])
 
   const notificationTypeLabels: Record<string, string> = {
     request_assigned: 'Talep Atandı',

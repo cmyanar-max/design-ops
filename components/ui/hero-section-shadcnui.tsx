@@ -1,9 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { NeonButton } from "@/components/ui/neon-button";
 import { motion, type Variants } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 export function HeroSection() {
@@ -54,9 +51,9 @@ export function HeroSection() {
 
       <motion.div variants={itemVariants} className="flex gap-4">
         <Link href="/signup">
-          <NeonButton variant="default" size="lg" className="gap-2">
+          <span className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-8 text-sm font-medium text-white transition-opacity hover:opacity-90">
             Hemen Başla
-          </NeonButton>
+          </span>
         </Link>
       </motion.div>
 

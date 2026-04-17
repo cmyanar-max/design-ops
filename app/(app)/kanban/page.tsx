@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import KanbanBoard from '@/components/kanban/KanbanBoard'
+import LazyKanbanBoard from '@/components/kanban/LazyKanbanBoard'
 import { RequestWithUser } from '@/types/database'
 
 export default async function KanbanPage() {
@@ -49,7 +49,7 @@ export default async function KanbanPage() {
       </div>
 
       <div className="flex-1 overflow-hidden p-6">
-        <KanbanBoard
+        <LazyKanbanBoard
           initialRequests={(requests ?? []) as RequestWithUser[]}
           orgId={currentUser.organization_id}
           readOnly={readOnly}

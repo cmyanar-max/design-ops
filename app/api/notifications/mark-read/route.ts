@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/logger'
 
 export async function POST(request: Request) {
   try {
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true })
   } catch (err: unknown) {
-    console.error('[POST /api/notifications/mark-read]', err)
+    logError('[POST /api/notifications/mark-read]', err)
     return NextResponse.json({ error: 'Bildirimler güncellenemedi' }, { status: 500 })
   }
 }

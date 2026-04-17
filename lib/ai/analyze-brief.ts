@@ -3,7 +3,8 @@
  * HTTP round-trip olmadan doğrudan çağrılabilir.
  */
 import { createAdminClient } from '@/lib/supabase/server'
-import { getAIClient, MODELS } from '@/lib/ai/client'
+import { getAIClient, MODELS, withRetry } from '@/lib/ai/client'
+import { logError, logWarn } from '@/lib/logger'
 import {
   BRIEF_ANALYSIS_SYSTEM,
   buildBriefAnalysisPrompt,
@@ -24,7 +25,7 @@ export async function runBriefAnalysis(
     .single()
 
   if (reqError || !req) {
-    console.error('[runBriefAnalysis] Talep bulunamadı:', requestId, reqError)
+    logError('[runBriefAnalysis] Talep bulunamadı:', { requestId, reqError })
     return null
   }
 
@@ -34,7 +35,7 @@ export async function runBriefAnalysis(
   })
 
   if (!hasCredit) {
-    console.warn('[runBriefAnalysis] AI kredi limiti aşıldı, org:', req.organization_id)
+    logWarn('[runBriefAnalysis] AI kredi limiti aşıldı, org:', req.organization_id)
     return null
   }
 
@@ -46,14 +47,16 @@ export async function runBriefAnalysis(
   )
 
   const client = getAIClient()
-  const completion = await client.chat.completions.create({
-    model: MODELS.fast,
-    messages: [
-      { role: 'system', content: BRIEF_ANALYSIS_SYSTEM },
-      { role: 'user', content: prompt },
-    ],
-    temperature: 0.3,
-  })
+  const completion = await withRetry(() =>
+    client.chat.completions.create({
+      model: MODELS.fast,
+      messages: [
+        { role: 'system', content: BRIEF_ANALYSIS_SYSTEM },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.3,
+    })
+  )
 
   const latency = Date.now() - startTime
   const responseText = completion.choices[0]?.message?.content ?? ''
@@ -63,7 +66,7 @@ export async function runBriefAnalysis(
     const jsonMatch = responseText.match(/\{[\s\S]*\}/)
     result = JSON.parse(jsonMatch?.[0] ?? responseText)
   } catch {
-    console.error('[runBriefAnalysis] JSON parse hatası:', responseText)
+    logError('[runBriefAnalysis] JSON parse hatası:', responseText)
     return null
   }
 
@@ -71,7 +74,7 @@ export async function runBriefAnalysis(
     .from('requests')
     .update({
       ai_brief_score: result.score,
-      ai_brief_suggestions: result as unknown as Record<string, unknown>,
+      ai_brief_suggestions: { ...result },
     })
     .eq('id', requestId)
 
@@ -89,6 +92,5 @@ export async function runBriefAnalysis(
     status: 'success',
   })
 
-  console.log(`[runBriefAnalysis] Tamamlandı: ${requestId}, skor: ${result.score}, süre: ${latency}ms`)
   return result
 }

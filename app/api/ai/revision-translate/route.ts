@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { getAIClient, MODELS } from '@/lib/ai/client'
+import { getAIClient, MODELS, withRetry } from '@/lib/ai/client'
 import { buildRevisionTranslationPrompt, RevisionTranslationResult } from '@/lib/ai/prompts/revision-translation'
+import { checkRateLimit } from '@/lib/rateLimit'
+import { logError } from '@/lib/logger'
 
 const schema = z.object({
   requestId: z.string().uuid(),
@@ -14,6 +16,14 @@ export async function POST(request: Request) {
     const supabase = await createClient()
     const { data: { user: authUser } } = await supabase.auth.getUser()
     if (!authUser) return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
+
+    const { allowed, retryAfter } = checkRateLimit(authUser.id)
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Çok fazla istek gönderildi, lütfen bekleyin' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      )
+    }
 
     const body = await request.json()
     const parsed = schema.safeParse(body)
@@ -34,13 +44,15 @@ export async function POST(request: Request) {
     const prompt = buildRevisionTranslationPrompt(commentBody, briefContext)
 
     const client = getAIClient()
-    const aiResponse = await client.chat.completions.create({
-      model: MODELS.fast,
-      messages: [
-        { role: 'system', content: 'Sen bir tasarım proje yöneticisisin. Müşteri yorumlarını tasarımcı için net görev listelerine çevirirsin. Yanıtını her zaman geçerli JSON formatında ver.' },
-        { role: 'user', content: prompt },
-      ],
-    })
+    const aiResponse = await withRetry(() =>
+      client.chat.completions.create({
+        model: MODELS.fast,
+        messages: [
+          { role: 'system', content: 'Sen bir tasarım proje yöneticisisin. Müşteri yorumlarını tasarımcı için net görev listelerine çevirirsin. Yanıtını her zaman geçerli JSON formatında ver.' },
+          { role: 'user', content: prompt },
+        ],
+      })
+    )
 
     const responseText = aiResponse.choices[0].message.content ?? ''
     let result: RevisionTranslationResult
@@ -63,7 +75,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(result)
   } catch (err: unknown) {
-    console.error('[POST /api/ai/revision-translate]', err)
+    logError('[POST /api/ai/revision-translate]', err)
     return NextResponse.json({ error: 'AI çevirisi başarısız' }, { status: 500 })
   }
 }

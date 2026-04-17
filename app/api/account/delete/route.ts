@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/logger'
 
-export async function POST(_request: NextRequest) {
+export async function POST() {
   try {
     const supabase = await createClient()
     const { data: { user: authUser } } = await supabase.auth.getUser()
@@ -15,7 +16,7 @@ export async function POST(_request: NextRequest) {
     // Tüm DB temizliğini tek bir atomik RPC içinde yap
     const { error: rpcError } = await supabase.rpc('delete_own_account')
     if (rpcError) {
-      console.error('[delete_own_account RPC]', rpcError)
+      logError('[delete_own_account RPC]', rpcError instanceof Error ? rpcError.message : 'unknown')
       return NextResponse.json({ error: 'Hesap silinemedi' }, { status: 500 })
     }
 
@@ -23,13 +24,13 @@ export async function POST(_request: NextRequest) {
     const adminClient = createAdminClient()
     const { error: authDeleteError } = await adminClient.auth.admin.deleteUser(userId)
     if (authDeleteError) {
-      console.error('[deleteUser auth]', authDeleteError)
+      logError('[deleteUser auth]', authDeleteError instanceof Error ? authDeleteError.message : 'unknown')
       return NextResponse.json({ error: 'Hesap silinemedi' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, message: 'Hesap başarıyla silindi' })
   } catch (error) {
-    console.error('[POST /api/account/delete]', error)
+    logError('[POST /api/account/delete]', error instanceof Error ? error.message : 'unknown')
     return NextResponse.json({ error: 'Bir hata oluştu' }, { status: 500 })
   }
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/logger'
 
 const ALLOWED_MIME_TYPES = [
   'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
     }
 
-    const { filename, mime_type, file_size, request_id, file_type } = parsed.data
+    const { filename, mime_type, file_size, request_id } = parsed.data
 
     // MIME type doğrulama
     if (!ALLOWED_MIME_TYPES.includes(mime_type)) {
@@ -72,10 +73,20 @@ export async function POST(request: Request) {
       path: signedData.path,
     })
   } catch (err: unknown) {
-    console.error('[POST /api/upload/sign]', err)
+    logError('[POST /api/upload/sign]', err)
     return NextResponse.json({ error: 'Upload URL üretilemedi' }, { status: 500 })
   }
 }
+
+const putSchema = z.object({
+  storage_path: z.string().min(1).max(512),
+  request_id: z.string().uuid(),
+  filename: z.string().min(1).max(255),
+  mime_type: z.string(),
+  file_size: z.number().positive(),
+  file_type: z.enum(['logo', 'image', 'pdf', 'font', 'guideline', 'design_output', 'other']),
+  description: z.string().max(500).optional(),
+})
 
 // Dosya metadata'sını kaydet (upload tamamlandıktan sonra çağrılır)
 export async function PUT(request: Request) {
@@ -92,7 +103,12 @@ export async function PUT(request: Request) {
 
     if (!currentUser) return NextResponse.json({ error: 'Kullanıcı bulunamadı' }, { status: 404 })
 
-    const { storage_path, request_id, filename, mime_type, file_size, file_type, description } = await request.json()
+    const rawBody = await request.json()
+    const putParsed = putSchema.safeParse(rawBody)
+    if (!putParsed.success) {
+      return NextResponse.json({ error: putParsed.error.flatten() }, { status: 400 })
+    }
+    const { storage_path, request_id, filename, mime_type, file_size, file_type, description } = putParsed.data
 
     const { data: fileRecord, error } = await supabase
       .from('files')
@@ -114,7 +130,7 @@ export async function PUT(request: Request) {
 
     return NextResponse.json(fileRecord, { status: 201 })
   } catch (err: unknown) {
-    console.error('[PUT /api/upload/sign]', err)
+    logError('[PUT /api/upload/sign]', err)
     return NextResponse.json({ error: 'Dosya kaydedilemedi' }, { status: 500 })
   }
 }

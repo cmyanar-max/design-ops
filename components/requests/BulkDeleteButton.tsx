@@ -23,6 +23,7 @@ interface BulkDeleteButtonProps {
 }
 
 export default function BulkDeleteButton({ selectedRequests, onSuccess, onClear, isAdmin = false }: BulkDeleteButtonProps) {
+  void onClear
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
 

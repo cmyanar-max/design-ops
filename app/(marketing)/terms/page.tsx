@@ -7,6 +7,20 @@ export const metadata = {
   description: 'DesignOps platformu kullanım koşulları ve hizmet sözleşmesi.',
 }
 
+interface RoleSection {
+  intro?: string
+  roles: { name: string; desc: string }[]
+}
+
+function hasRoles(section: unknown): section is RoleSection {
+  return (
+    typeof section === 'object' &&
+    section !== null &&
+    'roles' in section &&
+    Array.isArray((section as { roles?: unknown }).roles)
+  )
+}
+
 const sections = [
   {
     id: '1',
@@ -340,12 +354,12 @@ export default function TermsPage() {
                 </dl>
               )}
 
-              {'roles' in section && !!(section as unknown as { roles: unknown[] }).roles && (
+              {hasRoles(section) && (
                 <div className="space-y-3">
-                  {'intro' in section && section.intro && (
+                  {section.intro && (
                     <p className="text-sm text-gray-600 leading-relaxed mb-3">{section.intro}</p>
                   )}
-                  {(section as unknown as { roles: { name: string; desc: string }[] }).roles.map((role, i) => (
+                  {section.roles.map((role, i) => (
                     <div key={i} className="flex gap-3 p-3.5 rounded-lg bg-gray-50 border border-gray-100">
                       <div className="flex-shrink-0 w-2 h-2 mt-1.5 rounded-full bg-primary" />
                       <div>

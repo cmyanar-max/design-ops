@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { logInfo } from '@/lib/logger'
 
 const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
@@ -27,7 +28,7 @@ export async function sendInviteEmail(params: SendInviteEmailParams): Promise<vo
 
   if (!resend) {
     // RESEND_API_KEY tanımlı değil — geliştirme ortamında sessizce geç
-    console.info(`[email:dev] Davet linki → ${inviteUrl}`)
+    logInfo(`[email:dev] Davet e-postası → ${to}`)
     return
   }
 

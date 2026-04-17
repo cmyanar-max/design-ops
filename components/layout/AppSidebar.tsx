@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { cn, getInitials } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -99,7 +100,14 @@ export default function AppSidebar({ user }: AppSidebarProps) {
     <aside className="w-56 shrink-0 border-r border-sidebar-border flex flex-col h-full bg-sidebar">
       {/* Logo */}
       <div className="px-4 h-12 border-b border-sidebar-border flex items-center">
-        <img src="/do_logo.svg" alt="DesignOps Logo" className="h-6 w-auto" />
+        <Image
+          src="/do_logo.svg"
+          alt="DesignOps Logo"
+          width={110}
+          height={24}
+          priority
+          className="h-6 w-auto"
+        />
       </div>
 
       {/* Navigasyon */}
